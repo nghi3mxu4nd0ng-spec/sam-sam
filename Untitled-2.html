@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dui Dui - </title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QRCode.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <style>
+        /* Tông màu chủ đạo  */
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #0284c7 50%, #0369a1 100%);
+            background-attachment: fixed;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Effect */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #fff;
+        }
+
+        .glass-input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+        }
+
+        /* Animated Water Background Waves */
+        .ocean {
+            height: 8px;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            background: #01579b;
+            z-index: -1;
+        }
+
+        .wave {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 88.7"><path fill="%2338bdf8" fill-opacity="0.25" d="M800 56.9c-155.5 0-204.9-50-405.5-49.9-200 0-250 49.9-394.5 49.9v31.8h800v-31.8z"/></svg>') repeat-x;
+            position: absolute;
+            top: -50px;
+            width: 6400px;
+            height: 60px;
+            animation: wave 12s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+            transform: translate3d(0, 0, 0);
+        }
+
+        .wave:nth-of-type(2) {
+            top: -35px;
+            animation: wave 9s cubic-bezier(0.36, 0.45, 0.63, 0.53) -.125s infinite, swell 9s ease -1.25s infinite;
+            opacity: 1;
+        }
+
+        @keyframes wave {
+            0% { margin-left: 0; }
+            100% { margin-left: -1600px; }
+        }
+
+        @keyframes swell {
+            0%, 100% { transform: translate3d(0,-10px,0); }
+            50% { transform: translate3d(0,5px,0); }
+        }
+
+        /* Glow animation cho tổng điểm */
+        .glow-score-pos {
+            text-shadow: 0 0 10px rgba(52, 211, 153, 0.8);
+        }
+        .glow-score-neg {
+            text-shadow: 0 0 10px rgba(248, 113, 113, 0.8);
+        }
+    </style>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, update, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCq2zXvJgPoLYzeZkCLiEl0gTbOyPArh3I",
+            authDomain: "samsam-1947a.firebaseapp.com",
+            databaseURL: "https://samsam-1947a-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "samsam-1947a",
+            storageBucket: "samsam-1947a.firebasestorage.app",
+            messagingSenderId: "332848562048",
+            appId: "1:332848562048:web:0b8f32c24f373fc0f5cb65",
+            measurementId: "G-5WPYC3DQ4Z"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.db = db;
+        window.dbRef = ref;
+        window.dbSet = set;
+        window.dbOnValue = onValue;
+        window.dbUpdate = update;
+        window.dbRemove = remove;
+    </script>
+</head>
+<body class="font-sans min-h-screen pb-12">
+
+    <!-- Hiệu ứng Sóng nước Mệnh Thủy -->
+    <div class="ocean">
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+
+    <!-- Header Phong Thủy -->
+    <header class="glass-card sticky top-0 z-30 border-b border-sky-400/30 py-4 px-6 mb-6">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-water text-sky-400 text-2xl animate-pulse"></i>
+                <div>
+                    <h1 class="text-lg font-bold bg-gradient-to-r from-sky-200 via-cyan-300 to-blue-400 bg-clip-text text-transparent">THỦY PHONG BẢNG</h1>
+                    <p id="room-info" class="text-xs text-sky-300/80">Đang chờ tham gia...</p>
+                </div>
+            </div>
+            <span id="status-tag" class="hidden text-[10px] bg-sky-500/20 text-sky-300 border border-sky-400/40 px-2.5 py-1 rounded-full font-semibold">
+                <i class="fa-solid fa-circle text-[8px] text-emerald-400 animate-ping mr-1"></i> Trực tuyến
+            </span>
+        </div>
+    </header>
+
+    <main class="max-w-md mx-auto px-4 space-y-5">
+
+        <!-- STEP 1: ĐĂNG NHẬP / TẠO PHÒNG -->
+        <div id="step-login" class="glass-card rounded-3xl p-6 space-y-5 text-center">
+            <div class="w-16 h-16 bg-sky-500/10 border border-sky-400/30 rounded-full flex items-center justify-center mx-auto text-sky-300 text-2xl">
+                <i class="fa-solid fa-user-astronaut"></i>
+            </div>
+            <h2 class="text-xl font-bold text-sky-100">Tham Gia Bàn Chơi</h2>
+            <div class="text-left space-y-2">
+                <label class="text-xs font-semibold text-sky-300 uppercase tracking-wider ml-1">Tên Người Chơi</label>
+                <input type="text" id="username" placeholder="Nhập biệt danh của bạn..." class="w-full glass-input px-4 py-3 rounded-2xl outline-none transition placeholder-sky-300/40 text-sm">
+            </div>
+            <button onclick="joinRoom()" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-cyan-500/30 active:scale-95 transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-right-to-bracket"></i> Vào / Tạo Phòng
+            </button>
+        </div>
+
+        <!-- MAIN GAME PANEL -->
+        <div id="main-panel" class="hidden space-y-5">
+
+            <!-- BANNER PHÒNG ĐÃ KHÓA -->
+            <div id="closed-banner" class="hidden glass-card border-amber-400/40 bg-amber-500/10 text-amber-200 p-4 rounded-2xl text-xs space-y-1">
+                <div class="flex items-center gap-2 font-bold text-amber-300 text-sm">
+                    <i class="fa-solid fa-lock"></i> PHÒNG ĐÃ CHỐT VÀ KHÓA
+                </div>
+                <p class="text-amber-200/80 leading-relaxed">Bảng điểm đã đóng cố định. Hệ thống sẽ tự động dọn dẹp và xóa hoàn toàn lịch sử sau <b class="text-white">72 giờ</b> kể từ lúc khóa.</p>
+            </div>
+
+            <!-- CẢNH BÁO CHƯA ĐIỀN ĐIỂM -->
+            <div id="alert-banner" class="hidden glass-card border-rose-500/50 bg-rose-500/10 text-rose-200 p-4 rounded-2xl text-xs flex items-start gap-3">
+                <i class="fa-solid fa-circle-exclamation text-rose-400 text-lg mt-0.5"></i>
+                <div>
+                    <p class="font-bold text-rose-300 text-sm">Chưa thể tính điểm!</p>
+                    <p id="alert-message" class="mt-0.5 text-rose-200/80">Những người chưa điền điểm: ...</p>
+                </div>
+            </div>
+
+            <!-- THÔNG TIN PHÒNG & QR -->
+            <div class="glass-card rounded-2xl p-4 text-center space-y-3">
+                <button onclick="toggleQR()" class="text-xs text-sky-300 hover:text-sky-100 font-semibold flex items-center justify-center gap-2 mx-auto">
+                    <i class="fa-solid fa-qrcode"></i> Hiện / Ẩn Mã QR Mời Bạn Bè
+                </button>
+                <div id="qr-container" class="hidden flex-col items-center pt-2 space-y-3">
+                    <div id="qrcode" class="p-3 bg-white rounded-2xl shadow-inner"></div>
+                    <button onclick="copyLink()" class="glass-input px-4 py-2 rounded-xl text-xs text-sky-200 hover:bg-sky-400/20 transition flex items-center gap-2">
+                        <i class="fa-regular fa-copy"></i> Sao Chép Đường Dẫn
+                    </button>
+                </div>
+            </div>
+
+            <!-- BẢNG TỔNG ĐIỂM CHUNG CUỘC -->
+            <div class="glass-card rounded-3xl p-5 space-y-4">
+                <div class="flex justify-between items-center border-b border-sky-400/20 pb-3">
+                    <h3 class="font-bold text-sky-200 flex items-center gap-2">
+                        <i class="fa-solid fa-trophy text-amber-400"></i> Bảng Tổng Kết Điểm
+                    </h3>
+                    <span id="round-count" class="text-xs bg-sky-400/20 text-sky-300 border border-sky-400/30 px-3 py-1 rounded-full font-medium">Ván: 0</span>
+                </div>
+                <div id="leaderboard" class="space-y-2"></div>
+            </div>
+
+            <!-- NHẬP ĐIỂM VÁN HIỆN TẠI -->
+            <div id="input-section" class="glass-card rounded-3xl p-5 space-y-4">
+                <div class="border-b border-sky-400/20 pb-2">
+                    <h3 class="font-bold text-sky-100 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-cyan-400"></i> Nhập Điểm Ván Hiện Tại
+                    </h3>
+                    <p class="text-[11px] text-sky-300/70 mt-0.5">Tích chọn **Thắng** hoặc nhập điểm thua (ví dụ: <span class="text-emerald-400 font-bold">+50</span> hoặc <span class="text-rose-400 font-bold">-50</span>).</p>
+                </div>
+                
+                <div id="players-input-list" class="space-y-3"></div>
+
+                <button onclick="submitRound()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-emerald-500/25 active:scale-95 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-check"></i> Chốt Điểm Ván Này
+                </button>
+            </div>
+
+            <!-- NÚT ĐÓNG PHÒNG DÀNH CHO CHỦ PHÒNG -->
+            <div id="host-actions" class="hidden">
+                <button onclick="closeRoom()" class="w-full bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-rose-600/30 active:scale-95 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-lock"></i> Khóa & Chốt Bảng (Tự xóa sau 72h)
+                </button>
+            </div>
+
+            <!-- LỊCH SỬ CÁC VÁN -->
+            <div class="glass-card rounded-3xl p-5 space-y-3">
+                <div class="flex justify-between items-center border-b border-sky-400/20 pb-3">
+                    <h3 class="font-bold text-sky-200 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-sky-400"></i> Lịch Sử Lũy Kế
+                    </h3>
+                    <span id="host-badge" class="hidden text-[10px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-2.5 py-0.5 rounded-lg font-bold">
+                        👑 Chủ Phòng
+                    </span>
+                </div>
+                <div id="history-list" class="space-y-2 text-xs max-h-64 overflow-y-auto pr-1"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL SỬA ĐIỂM -->
+    <div id="edit-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="glass-card border-sky-400/40 rounded-3xl p-6 w-full max-w-sm space-y-5 shadow-2xl">
+            <h3 class="font-bold text-lg text-sky-100 flex items-center gap-2" id="modal-title">
+                <i class="fa-solid fa-pen-nib text-amber-400"></i> Sửa Điểm Ván
+            </h3>
+            <div id="modal-inputs" class="space-y-3 max-h-60 overflow-y-auto pr-1"></div>
+            <div class="flex gap-3 pt-2">
+                <button onclick="closeEditModal()" class="flex-1 glass-input py-3 rounded-xl font-bold text-sky-300 text-xs">Hủy</button>
+                <button onclick="saveEditedRound()" class="flex-1 bg-gradient-to-r from-sky-500 to-blue-600 font-bold py-3 rounded-xl text-white text-xs shadow-lg shadow-sky-500/30">Lưu Thay Đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let roomId = '';
+        let myName = '';
+        let roomData = { host: '', players: {}, rounds: [], warningMsg: '', isClosed: false, closedAt: null };
+        let editingRoundIndex = -1;
+        const EXPIRE_TIME_MS = 72 * 60 * 60 * 1000; // 72 Giờ
+
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomParam = urlParams.get('room');
+            if (roomParam) roomId = roomParam.toUpperCase();
+        };
+
+        function joinRoom() {
+            const nameInput = document.getElementById('username').value.trim();
+            if (!nameInput) return alert('Vui lòng nhập biệt danh của bạn!');
+
+            myName = nameInput;
+            if (!roomId) roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+            document.getElementById('step-login').classList.add('hidden');
+            document.getElementById('main-panel').classList.remove('hidden');
+            document.getElementById('status-tag').classList.remove('hidden');
+
+            const roomUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), { text: roomUrl, width: 120, height: 120 });
+
+            // LẮNG NGHE REALTIME
+            const roomRef = window.dbRef(window.db, 'rooms/' + roomId);
+            window.dbOnValue(roomRef, (snapshot) => {
+                const data = snapshot.val();
+                
+                if (data) {
+                    // TỰ ĐỘNG XÓA DỮ LIỆU SAU 72H KỂ TỪ KHI CHỐT PHÒNG
+                    if (data.isClosed && data.closedAt) {
+                        const now = Date.now();
+                        if (now - data.closedAt >= EXPIRE_TIME_MS) {
+                            window.dbRemove(window.dbRef(window.db, 'rooms/' + roomId));
+                            alert("Phòng chơi này đã vượt quá thời hạn 72 giờ và được hệ thống dọn dẹp tự động!");
+                            window.location.href = window.location.pathname;
+                            return;
+                        }
+                    }
+
+                    roomData = data;
+                    if (!roomData.players) roomData.players = {};
+                    if (!roomData.rounds) roomData.rounds = [];
+                } else {
+                    roomData.host = myName;
+                }
+
+                if (!roomData.host) roomData.host = myName;
+
+                if (!roomData.players[myName]) {
+                    window.dbUpdate(window.dbRef(window.db, `rooms/${roomId}`), {
+                        host: roomData.host,
+                        [`players/${myName}`]: { isWin: false, inputVal: '' }
+                    });
+                } else {
+                    renderUI();
+                }
+            });
+        }
+
+        function renderUI() {
+            const isHost = roomData.host === myName;
+            document.getElementById('room-info').innerText = `Mã: ${roomId} | ${myName} ${isHost ? '👑' : ''}`;
+            
+            if (isHost) {
+                document.getElementById('host-badge').classList.remove('hidden');
+                if (!roomData.isClosed) {
+                    document.getElementById('host-actions').classList.remove('hidden');
+                } else {
+                    document.getElementById('host-actions').classList.add('hidden');
+                }
+            }
+
+            if (roomData.isClosed) {
+                document.getElementById('closed-banner').classList.remove('hidden');
+                document.getElementById('input-section').classList.add('hidden');
+            } else {
+                document.getElementById('closed-banner').classList.add('hidden');
+                document.getElementById('input-section').classList.remove('hidden');
+            }
+
+            const alertBanner = document.getElementById('alert-banner');
+            if (roomData.warningMsg && !roomData.isClosed) {
+                document.getElementById('alert-message').innerText = roomData.warningMsg;
+                alertBanner.classList.remove('hidden');
+            } else {
+                alertBanner.classList.add('hidden');
+            }
+
+            // Render Bảng xếp hạng
+            const scores = calculateTotalScores();
+            const lb = document.getElementById('leaderboard');
+            lb.innerHTML = '';
+
+            const sortedPlayers = Object.keys(roomData.players).map(name => ({
+                name,
+                score: scores[name] || 0
+            })).sort((a, b) => b.score - a.score);
+
+            sortedPlayers.forEach((p, idx) => {
+                const isPos = p.score >= 0;
+                let rankIcon = idx === 0 ? '<i class="fa-solid fa-crown text-amber-400"></i>' : 
+                               idx === 1 ? '<i class="fa-solid fa-medal text-slate-300"></i>' : 
+                               idx === 2 ? '<i class="fa-solid fa-award text-amber-600"></i>' : `<span class="text-xs font-bold text-sky-400">${idx+1}</span>`;
+
+                lb.innerHTML += `
+                    <div class="flex justify-between items-center p-3 rounded-2xl glass-input transition">
+                        <div class="flex items-center gap-3">
+                            <div class="w-7 text-center">${rankIcon}</div>
+                            <div>
+                                <p class="font-bold text-sm ${p.name === myName ? 'text-sky-300' : 'text-slate-100'}">
+                                    ${p.name} ${p.name === roomData.host ? '👑' : ''} ${p.name === myName ? '(Tôi)' : ''}
+                                </p>
+                            </div>
+                        </div>
+                        <span class="font-extrabold text-base ${isPos ? 'text-emerald-400 glow-score-pos' : 'text-rose-400 glow-score-neg'}">
+                            ${isPos ? '+' : ''}${p.score}
+                        </span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('round-count').innerText = `Ván: ${(roomData.rounds || []).length}`;
+
+            // Render Nhập điểm
+            const inputList = document.getElementById('players-input-list');
+            inputList.innerHTML = '';
+
+            Object.entries(roomData.players).forEach(([pName, pData]) => {
+                const isMe = pName === myName;
+                inputList.innerHTML += `
+                    <div class="p-3.5 rounded-2xl ${isMe ? 'bg-sky-500/10 border-sky-400/40' : 'glass-input'} border space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-xs ${isMe ? 'text-sky-300' : 'text-slate-200'}">${pName} ${isMe ? '(Tôi)' : ''}</span>
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="checkbox" ${pData.isWin ? 'checked' : ''} 
+                                    onchange="updateInput('${pName}', 'isWin', this.checked)" 
+                                    class="w-4 h-4 accent-emerald-500 rounded">
+                                <span class="text-xs font-bold text-emerald-400">Thắng</span>
+                            </label>
+                        </div>
+                        <div class="${pData.isWin ? 'hidden' : ''}">
+                            <input type="text" value="${pData.inputVal !== undefined ? pData.inputVal : ''}" 
+                                placeholder="Số điểm (VD: +50 hoặc -50)" 
+                                onchange="updateInput('${pName}', 'inputVal', this.value.trim())"
+                                class="w-full glass-input px-3 py-2 rounded-xl text-xs outline-none">
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Render Lịch Sử
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = '';
+            
+            [...(roomData.rounds || [])].forEach((r, idx) => {
+                let details = Object.entries(r.scores)
+                    .map(([name, sc]) => `${name}: <b class="${sc >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${sc >= 0 ? '+' : ''}${sc}</b>`)
+                    .join(' | ');
+
+                historyList.innerHTML = `
+                    <div class="p-3 rounded-2xl glass-input flex justify-between items-center gap-2">
+                        <div class="flex-1 leading-relaxed">
+                            <span class="font-bold text-sky-400">Ván ${idx + 1}:</span> ${details}
+                        </div>
+                        ${(isHost && !roomData.isClosed) ? `<button onclick="openEditModal(${idx})" class="bg-amber-500/20 text-amber-300 border border-amber-400/30 px-2.5 py-1 rounded-xl text-[10px] font-bold"><i class="fa-solid fa-pen"></i> Sửa</button>` : ''}
+                    </div>
+                ` + historyList.innerHTML;
+            });
+        }
+
+        function updateInput(pName, field, value) {
+            if (roomData.isClosed) return;
+            let updates = {};
+            updates[`rooms/${roomId}/players/${pName}/${field}`] = value;
+            if (field === 'isWin' && value === true) {
+                updates[`rooms/${roomId}/players/${pName}/inputVal`] = '';
+            }
+            window.dbUpdate(window.dbRef(window.db), updates);
+        }
+
+        function submitRound() {
+            if (roomData.isClosed) return;
+            let missingPlayers = [];
+            let winners = [];
+            let currentRoundScores = {};
+            let totalLossPool = 0;
+
+            Object.entries(roomData.players).forEach(([pName, pData]) => {
+                if (!pData.isWin && (pData.inputVal === undefined || pData.inputVal === '')) {
+                    missingPlayers.push(pName);
+                }
+            });
+
+            if (missingPlayers.length > 0) {
+                const msg = `Còn người chưa nhập điểm: ${missingPlayers.join(', ')}`;
+                window.dbUpdate(window.dbRef(window.db, `rooms/${roomId}`), { warningMsg: msg });
+                return;
+            }
+
+            Object.entries(roomData.players).forEach(([pName, pData]) => {
+                if (pData.isWin) {
+                    winners.push(pName);
+                } else {
+                    const num = parseFloat(pData.inputVal) || 0;
+                    currentRoundScores[pName] = num;
+                    if (num < 0) totalLossPool += Math.abs(num);
+                }
+            });
+
+            if (winners.length === 0) {
+                alert("Phải có ít nhất 1 người chọn THẮNG!");
+                return;
+            }
+
+            const winShare = Math.round((totalLossPool / winners.length) * 100) / 100;
+            winners.forEach(wName => {
+                currentRoundScores[wName] = winShare;
+            });
+
+            let resetPlayers = { ...roomData.players };
+            Object.keys(resetPlayers).forEach(pName => {
+                resetPlayers[pName].isWin = false;
+                resetPlayers[pName].inputVal = '';
+            });
+
+            const updatedRounds = [...(roomData.rounds || []), { scores: currentRoundScores }];
+
+            window.dbUpdate(window.dbRef(window.db, `rooms/${roomId}`), {
+                players: resetPlayers,
+                rounds: updatedRounds,
+                warningMsg: ''
+            });
+        }
+
+        function closeRoom() {
+            if (confirm("Xác nhận ĐÓNG & CHỐT PHÒNG? Sau khi đóng, dữ liệu bảng điểm sẽ được lưu cố định và tự động xóa vĩnh viễn sau 72 giờ.")) {
+                window.dbUpdate(window.dbRef(window.db, `rooms/${roomId}`), {
+                    isClosed: true,
+                    closedAt: Date.now()
+                });
+            }
+        }
+
+        function calculateTotalScores() {
+            let totals = {};
+            Object.keys(roomData.players || {}).forEach(name => totals[name] = 0);
+
+            (roomData.rounds || []).forEach(r => {
+                Object.entries(r.scores || {}).forEach(([name, sc]) => {
+                    totals[name] = Math.round(((totals[name] || 0) + sc) * 100) / 100;
+                });
+            });
+            return totals;
+        }
+
+        function openEditModal(roundIdx) {
+            editingRoundIndex = roundIdx;
+            const round = roomData.rounds[roundIdx];
+            document.getElementById('modal-title').innerText = `Sửa Điểm Ván ${roundIdx + 1}`;
+            
+            const container = document.getElementById('modal-inputs');
+            container.innerHTML = '';
+
+            Object.entries(round.scores).forEach(([pName, sc]) => {
+                container.innerHTML += `
+                    <div class="flex justify-between items-center gap-2">
+                        <span class="font-bold text-xs text-sky-200 w-1/3">${pName}:</span>
+                        <input type="number" id="edit-score-${pName}" value="${sc}" 
+                            class="flex-1 glass-input p-2 rounded-xl text-xs outline-none">
+                    </div>
+                `;
+            });
+
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+        }
+
+        function saveEditedRound() {
+            if (editingRoundIndex < 0) return;
+
+            let updatedScores = {};
+            const round = roomData.rounds[editingRoundIndex];
+
+            Object.keys(round.scores).forEach(pName => {
+                const val = parseFloat(document.getElementById(`edit-score-${pName}`).value) || 0;
+                updatedScores[pName] = val;
+            });
+
+            let newRounds = [...roomData.rounds];
+            newRounds[editingRoundIndex].scores = updatedScores;
+
+            window.dbUpdate(window.dbRef(window.db, `rooms/${roomId}`), {
+                rounds: newRounds
+            });
+
+            closeEditModal();
+        }
+
+        function toggleQR() {
+            document.getElementById('qr-container').classList.toggle('hidden');
+            document.getElementById('qr-container').classList.toggle('flex');
+        }
+
+        function copyLink() {
+            const roomUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+            navigator.clipboard.writeText(roomUrl);
+            alert("Đã sao chép liên kết phòng!");
+        }
+    </script>
+</body>
+</html>
