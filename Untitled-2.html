@@ -1,43 +1,113 @@
+```html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dui Dui</title>
-    <!-- Tailwind CSS -->
+
+    <title>Phong Thần Bảng</title>
+
+    <!-- =========================================================
+         CDN
+    ========================================================== -->
+
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- QRCode.js -->
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    >
+
+    <!-- QR Code -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Canvas Confetti cho pháo hoa -->
+
+    <!-- Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    
+
+    <!-- =========================================================
+         STYLE
+    ========================================================== -->
+
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #0284c7 50%, #0369a1 100%);
+            margin: 0;
+            min-height: 100vh;
+            background:
+                radial-gradient(
+                    circle at 20% 20%,
+                    rgba(14, 165, 233, 0.25),
+                    transparent 35%
+                ),
+                radial-gradient(
+                    circle at 80% 10%,
+                    rgba(6, 182, 212, 0.20),
+                    transparent 35%
+                ),
+                linear-gradient(
+                    135deg,
+                    #020617 0%,
+                    #0f172a 30%,
+                    #075985 65%,
+                    #0369a1 100%
+                );
+
             background-attachment: fixed;
             color: #f8fafc;
             overflow-x: hidden;
         }
 
+        button,
+        input {
+            font-family: inherit;
+        }
+
+        button {
+            -webkit-tap-highlight-color: transparent;
+        }
+
         .glass-card {
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            background: rgba(15, 23, 42, 0.68);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+
+            border: 1px solid rgba(56, 189, 248, 0.20);
+
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
         }
 
         .glass-input {
-            background: rgba(255, 255, 255, 0.07);
-            border: 1px solid rgba(56, 189, 248, 0.3);
+            background: rgba(255, 255, 255, 0.065);
+            border: 1px solid rgba(56, 189, 248, 0.25);
             color: #fff;
         }
 
+        .glass-input::placeholder {
+            color: rgba(125, 211, 252, 0.40);
+        }
+
         .glass-input:focus {
+            outline: none;
             border-color: #38bdf8;
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+            box-shadow:
+                0 0 0 2px rgba(56, 189, 248, 0.10),
+                0 0 15px rgba(56, 189, 248, 0.35);
+        }
+
+        .glass-input:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
         }
 
         .ocean {
@@ -48,6 +118,7 @@
             left: 0;
             background: #01579b;
             z-index: -1;
+            overflow: hidden;
         }
 
         .wave {
@@ -56,76 +127,276 @@
             top: -50px;
             width: 6400px;
             height: 60px;
-            animation: wave 12s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
-            transform: translate3d(0, 0, 0);
+            animation:
+                wave 12s cubic-bezier(.36,.45,.63,.53) infinite;
+            transform: translate3d(0,0,0);
         }
 
         .wave:nth-of-type(2) {
             top: -35px;
-            animation: wave 9s cubic-bezier(0.36, 0.45, 0.63, 0.53) -.125s infinite, swell 9s ease -1.25s infinite;
+            animation:
+                wave 9s cubic-bezier(.36,.45,.63,.53) -.125s infinite,
+                swell 9s ease -1.25s infinite;
             opacity: 1;
         }
 
         @keyframes wave {
-            0% { margin-left: 0; }
-            100% { margin-left: -1600px; }
+            0% {
+                margin-left: 0;
+            }
+
+            100% {
+                margin-left: -1600px;
+            }
         }
 
         @keyframes swell {
-            0%, 100% { transform: translate3d(0,-10px,0); }
-            50% { transform: translate3d(0,5px,0); }
+            0%, 100% {
+                transform: translate3d(0,-10px,0);
+            }
+
+            50% {
+                transform: translate3d(0,5px,0);
+            }
         }
 
-        .glow-score-pos { text-shadow: 0 0 10px rgba(52, 211, 153, 0.8); }
-        .glow-score-neg { text-shadow: 0 0 10px rgba(248, 113, 113, 0.8); }
+        .glow-score-pos {
+            text-shadow:
+                0 0 8px rgba(52, 211, 153, 0.7),
+                0 0 20px rgba(52, 211, 153, 0.25);
+        }
 
-        /* Animation cho emoji cổ vũ */
+        .glow-score-neg {
+            text-shadow:
+                0 0 8px rgba(248, 113, 113, 0.7),
+                0 0 20px rgba(248, 113, 113, 0.25);
+        }
+
         @keyframes floatUp {
-            0% { transform: translateY(0) scale(0.8); opacity: 1; }
-            100% { transform: translateY(-100vh) scale(1.5); opacity: 0; }
+            0% {
+                transform:
+                    translateY(0)
+                    scale(.8)
+                    rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform:
+                    translateY(-100vh)
+                    scale(1.5)
+                    rotate(20deg);
+                opacity: 0;
+            }
         }
+
         .floating-emoji {
             position: fixed;
             bottom: 20px;
             font-size: 2.5rem;
             pointer-events: none;
-            z-index: 100;
+            z-index: 1000;
             animation: floatUp 3s ease-out forwards;
         }
 
-        /* Animation dội nước */
         @keyframes splash {
-            0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1.2); opacity: 0.9; }
-            100% { transform: scale(1); opacity: 0; }
+            0% {
+                transform: scale(.2);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: .95;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 0;
+            }
         }
+
         .water-splash-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(14, 165, 233, 0.4);
-            backdrop-filter: blur(8px);
+
+            background:
+                radial-gradient(
+                    circle,
+                    rgba(14, 165, 233, .45),
+                    rgba(2, 132, 199, .20),
+                    transparent 70%
+                );
+
+            backdrop-filter: blur(7px);
+
             z-index: 999;
+
             pointer-events: none;
+
             display: flex;
             align-items: center;
             justify-content: center;
+
             font-size: 8rem;
+
             animation: splash 1.5s ease-out forwards;
         }
+
         .shake-screen {
-            animation: shake 0.5s ease-in-out;
+            animation: shake .5s ease-in-out;
         }
+
         @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-10px); }
-            40%, 80% { transform: translateX(10px); }
+            0%, 100% {
+                transform: translateX(0);
+            }
+
+            20%, 60% {
+                transform: translateX(-10px);
+            }
+
+            40%, 80% {
+                transform: translateX(10px);
+            }
+        }
+
+        .pulse-online {
+            animation: pulseOnline 1.8s ease-in-out infinite;
+        }
+
+        @keyframes pulseOnline {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .45;
+            }
+        }
+
+        .modal-enter {
+            animation: modalEnter .18s ease-out;
+        }
+
+        @keyframes modalEnter {
+            from {
+                opacity: 0;
+                transform: scale(.96) translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .winner-row {
+            box-shadow:
+                inset 0 0 0 1px rgba(251, 191, 36, .18),
+                0 0 20px rgba(251, 191, 36, .04);
+        }
+
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: rgba(255,255,255,.03);
+            border-radius: 999px;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: rgba(56,189,248,.25);
+            border-radius: 999px;
+        }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 28px;
+
+            transform: translateX(-50%) translateY(20px);
+
+            background: rgba(15,23,42,.92);
+            backdrop-filter: blur(14px);
+
+            border: 1px solid rgba(56,189,248,.25);
+
+            color: #e0f2fe;
+
+            padding: 11px 16px;
+
+            border-radius: 14px;
+
+            font-size: 12px;
+            font-weight: 600;
+
+            z-index: 2000;
+
+            opacity: 0;
+
+            transition:
+                opacity .2s ease,
+                transform .2s ease;
+
+            pointer-events: none;
+
+            box-shadow: 0 10px 35px rgba(0,0,0,.35);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            display: inline-block;
         }
     </style>
 
-    <!-- Firebase SDK -->
+    <!-- =========================================================
+         FIREBASE
+    ========================================================== -->
+
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, update, remove, get, push } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        import {
+            initializeApp
+        } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+
+        import {
+            getDatabase,
+            ref,
+            set,
+            update,
+            remove,
+            get,
+            push,
+            onValue,
+            onChildAdded,
+            runTransaction,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+
+        /*
+         * ========================================================
+         * FIREBASE CONFIG
+         * ========================================================
+         *
+         * Đây là config Web App Firebase.
+         *
+         * API key Firebase Web KHÔNG phải password.
+         * Security thực sự nằm ở Firebase Database Rules.
+         */
 
         const firebaseConfig = {
             apiKey: "AIzaSyCq2zXvJgPoLYzeZkCLiEl0gTbOyPArh3I",
@@ -138,676 +409,5097 @@
             measurementId: "G-5WPYC3DQ4Z"
         };
 
+
         const app = initializeApp(firebaseConfig);
+
         const db = getDatabase(app);
 
-        window.db = db;
-        window.dbRef = ref;
-        window.dbSet = set;
-        window.dbOnValue = onValue;
-        window.dbUpdate = update;
-        window.dbRemove = remove;
-        window.dbGet = get;
-        window.dbPush = push;
+
+        /*
+         * Expose only what frontend needs.
+         */
+
+        window.FirebaseAPI = {
+            db,
+            ref,
+            set,
+            update,
+            remove,
+            get,
+            push,
+            onValue,
+            onChildAdded,
+            runTransaction,
+            serverTimestamp
+        };
+
+
+        /*
+         * Báo Firebase đã sẵn sàng.
+         */
+
+        window.dispatchEvent(
+            new CustomEvent("firebase-ready")
+        );
+
     </script>
 </head>
-<body id="main-body" class="font-sans min-h-screen pb-12">
 
-    <!-- Hiệu ứng Sóng nước -->
+
+<body
+    id="main-body"
+    class="font-sans min-h-screen pb-16"
+>
+
+    <!-- =========================================================
+         WATER EFFECT
+    ========================================================== -->
+
     <div class="ocean">
         <div class="wave"></div>
         <div class="wave"></div>
     </div>
 
-    <!-- Header Phong Thủy -->
-    <header class="glass-card sticky top-0 z-30 border-b border-sky-400/30 py-4 px-6 mb-6">
-        <div class="max-w-md mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <i class="fa-solid fa-water text-sky-400 text-2xl animate-pulse"></i>
-                <div>
-                    <h1 class="text-lg font-bold bg-gradient-to-r from-sky-200 via-cyan-300 to-blue-400 bg-clip-text text-transparent">THỦY PHONG BẢNG</h1>
-                    <p id="room-info" class="text-xs text-sky-300/80">Đang chờ tham gia...</p>
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+
+    <header
+        class="
+            glass-card
+            sticky
+            top-0
+            z-30
+            border-b
+            border-sky-400/30
+            py-4
+            px-5
+            mb-6
+        "
+    >
+
+        <div
+            class="
+                max-w-md
+                mx-auto
+                flex
+                justify-between
+                items-center
+                gap-3
+            "
+        >
+
+            <div class="flex items-center gap-3 min-w-0">
+
+                <div
+                    class="
+                        w-10
+                        h-10
+                        shrink-0
+                        rounded-2xl
+                        bg-sky-500/10
+                        border
+                        border-sky-400/20
+                        flex
+                        items-center
+                        justify-center
+                    "
+                >
+                    <i
+                        class="
+                            fa-solid
+                            fa-water
+                            text-sky-400
+                            text-xl
+                            animate-pulse
+                        "
+                    ></i>
                 </div>
+
+                <div class="min-w-0">
+
+                    <h1
+                        class="
+                            text-lg
+                            font-bold
+                            bg-gradient-to-r
+                            from-sky-200
+                            via-cyan-300
+                            to-blue-400
+                            bg-clip-text
+                            text-transparent
+                            truncate
+                        "
+                    >
+                        THỦY PHONG BẢNG
+                    </h1>
+
+                    <p
+                        id="room-info"
+                        class="
+                            text-xs
+                            text-sky-300/80
+                            truncate
+                        "
+                    >
+                        Đang kết nối...
+                    </p>
+
+                </div>
+
             </div>
-            <div class="flex gap-1.5">
-                <span id="player-role-badge" class="text-[11px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2 py-0.5 rounded-full font-bold">
+
+
+            <div class="flex gap-1.5 shrink-0">
+
+                <span
+                    id="connection-badge"
+                    class="
+                        hidden
+                        text-[10px]
+                        bg-emerald-500/15
+                        text-emerald-300
+                        border
+                        border-emerald-400/30
+                        px-2
+                        py-0.5
+                        rounded-full
+                        font-bold
+                    "
+                >
+                    <span class="status-dot bg-emerald-400 mr-1"></span>
+                    Online
+                </span>
+
+                <span
+                    id="player-role-badge"
+                    class="
+                        text-[11px]
+                        bg-emerald-500/20
+                        text-emerald-300
+                        border
+                        border-emerald-400/40
+                        px-2
+                        py-0.5
+                        rounded-full
+                        font-bold
+                    "
+                >
                     🎮 Người Chơi
                 </span>
-                <span id="player-limit-badge" class="text-[11px] bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 px-2 py-0.5 rounded-full font-bold">
-                    👥 <span id="player-count-display">0</span>/5
+
+                <span
+                    class="
+                        text-[11px]
+                        bg-cyan-500/20
+                        text-cyan-300
+                        border
+                        border-cyan-400/40
+                        px-2
+                        py-0.5
+                        rounded-full
+                        font-bold
+                    "
+                >
+                    👥
+                    <span id="player-count-display">0</span>/5
                 </span>
+
             </div>
+
         </div>
+
     </header>
 
-    <main class="max-w-md mx-auto px-4 space-y-5">
 
-        <!-- STEP 1: ĐĂNG NHẬP / TẠO PHÒNG -->
-        <div id="step-login" class="glass-card rounded-3xl p-6 space-y-5 text-center">
-            <div class="w-16 h-16 bg-sky-500/10 border border-sky-400/30 rounded-full flex items-center justify-center mx-auto text-sky-300 text-2xl">
+    <!-- =========================================================
+         MAIN
+    ========================================================== -->
+
+    <main
+        class="
+            max-w-md
+            mx-auto
+            px-4
+            space-y-5
+        "
+    >
+
+
+        <!-- =====================================================
+             LOGIN
+        ====================================================== -->
+
+        <section
+            id="step-login"
+            class="
+                glass-card
+                rounded-3xl
+                p-6
+                space-y-5
+                text-center
+            "
+        >
+
+            <div
+                class="
+                    w-16
+                    h-16
+                    bg-sky-500/10
+                    border
+                    border-sky-400/30
+                    rounded-full
+                    flex
+                    items-center
+                    justify-center
+                    mx-auto
+                    text-sky-300
+                    text-2xl
+                "
+            >
                 <i class="fa-solid fa-users text-sky-400"></i>
             </div>
+
+
             <div>
-                <h2 class="text-xl font-bold text-sky-100">Tham Gia Bàn Chơi</h2>
-                <p class="text-xs text-sky-300/70 mt-1">Tối đa <b>5 người chơi</b>. Người thứ 6 sẽ vào chế độ <b>Khán Giả</b>.</p>
+
+                <h2
+                    class="
+                        text-xl
+                        font-bold
+                        text-sky-100
+                    "
+                >
+                    Tham Gia Bàn Chơi
+                </h2>
+
+                <p
+                    class="
+                        text-xs
+                        text-sky-300/70
+                        mt-1
+                        leading-relaxed
+                    "
+                >
+                    Tối đa
+                    <b>5 người chơi</b>.
+                    Người thứ 6 sẽ tự động vào
+                    <b>chế độ Khán Giả</b>.
+                </p>
+
             </div>
+
+
             <div class="text-left space-y-2">
-                <label class="text-xs font-semibold text-sky-300 uppercase tracking-wider ml-1">Tên Của Bạn</label>
-                <input type="text" id="username" placeholder="Nhập biệt danh..." class="w-full glass-input px-4 py-3 rounded-2xl outline-none transition placeholder-sky-300/40 text-sm">
+
+                <label
+                    class="
+                        text-xs
+                        font-semibold
+                        text-sky-300
+                        uppercase
+                        tracking-wider
+                        ml-1
+                    "
+                >
+                    Tên Của Bạn
+                </label>
+
+                <input
+                    type="text"
+                    id="username"
+                    maxlength="30"
+                    autocomplete="nickname"
+                    placeholder="Nhập biệt danh..."
+                    class="
+                        w-full
+                        glass-input
+                        px-4
+                        py-3
+                        rounded-2xl
+                        outline-none
+                        transition
+                        text-sm
+                    "
+                >
+
+                <p
+                    class="
+                        text-[10px]
+                        text-sky-300/50
+                        px-1
+                    "
+                >
+                    Tên tối đa 30 ký tự.
+                </p>
+
             </div>
-            <button onclick="joinRoom()" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-cyan-500/30 active:scale-95 transition flex items-center justify-center gap-2">
-                <i class="fa-solid fa-right-to-bracket"></i> Vào / Tạo Phòng
+
+
+            <button
+                id="join-button"
+                onclick="joinRoom()"
+                class="
+                    w-full
+                    bg-gradient-to-r
+                    from-cyan-500
+                    to-blue-600
+                    hover:from-cyan-400
+                    hover:to-blue-500
+                    text-white
+                    font-bold
+                    py-3.5
+                    rounded-2xl
+                    shadow-lg
+                    shadow-cyan-500/30
+                    active:scale-95
+                    transition
+                    flex
+                    items-center
+                    justify-center
+                    gap-2
+                "
+            >
+
+                <i class="fa-solid fa-right-to-bracket"></i>
+
+                Vào / Tạo Phòng
+
             </button>
-        </div>
 
-        <!-- MAIN GAME PANEL -->
-        <div id="main-panel" class="hidden space-y-5">
+        </section>
 
-            <!-- THANH CỔ VŨ & TƯƠNG TÁC (Dành cho cả người chơi & khán giả) -->
-            <div class="glass-card rounded-2xl p-3 flex justify-around items-center border-amber-400/30">
-                <button onclick="sendReaction('heart')" class="flex items-center gap-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-400/40 px-3 py-2 rounded-xl text-xs font-bold transition active:scale-95">
-                    ❤️ Thả Tim
+
+        <!-- =====================================================
+             MAIN PANEL
+        ====================================================== -->
+
+        <section
+            id="main-panel"
+            class="hidden space-y-5"
+        >
+
+
+            <!-- =================================================
+                 REACTIONS
+            ================================================== -->
+
+            <div
+                class="
+                    glass-card
+                    rounded-2xl
+                    p-3
+                    flex
+                    justify-around
+                    items-center
+                    border-amber-400/30
+                    gap-2
+                "
+            >
+
+                <button
+                    onclick="sendReaction('heart')"
+                    class="
+                        flex
+                        items-center
+                        gap-1.5
+                        bg-rose-500/20
+                        hover:bg-rose-500/30
+                        text-rose-300
+                        border
+                        border-rose-400/40
+                        px-3
+                        py-2
+                        rounded-xl
+                        text-xs
+                        font-bold
+                        transition
+                        active:scale-95
+                    "
+                >
+                    ❤️
+                    <span class="hidden sm:inline">Thả Tim</span>
+                    <span class="sm:hidden">Tim</span>
                 </button>
-                <button onclick="sendReaction('firework')" class="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 px-3 py-2 rounded-xl text-xs font-bold transition active:scale-95">
-                    🎆 Pháo Hoa
+
+
+                <button
+                    onclick="sendReaction('firework')"
+                    class="
+                        flex
+                        items-center
+                        gap-1.5
+                        bg-amber-500/20
+                        hover:bg-amber-500/30
+                        text-amber-300
+                        border
+                        border-amber-400/40
+                        px-3
+                        py-2
+                        rounded-xl
+                        text-xs
+                        font-bold
+                        transition
+                        active:scale-95
+                    "
+                >
+                    🎆
+                    <span class="hidden sm:inline">Pháo Hoa</span>
+                    <span class="sm:hidden">Pháo</span>
                 </button>
-                <button onclick="sendReaction('splash')" class="flex items-center gap-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/40 px-3 py-2 rounded-xl text-xs font-bold transition active:scale-95">
-                    🌊 Dội Nước
+
+
+                <button
+                    onclick="sendReaction('splash')"
+                    class="
+                        flex
+                        items-center
+                        gap-1.5
+                        bg-cyan-500/20
+                        hover:bg-cyan-500/30
+                        text-cyan-300
+                        border
+                        border-cyan-400/40
+                        px-3
+                        py-2
+                        rounded-xl
+                        text-xs
+                        font-bold
+                        transition
+                        active:scale-95
+                    "
+                >
+                    🌊
+                    <span class="hidden sm:inline">Dội Nước</span>
+                    <span class="sm:hidden">Dội</span>
                 </button>
+
             </div>
 
-            <!-- BANNER PHÒNG ĐÃ KHÓA -->
-            <div id="closed-banner" class="hidden glass-card border-amber-400/40 bg-amber-500/10 text-amber-200 p-4 rounded-2xl text-xs space-y-1">
-                <div class="flex items-center gap-2 font-bold text-amber-300 text-sm">
-                    <i class="fa-solid fa-lock"></i> PHÒNG ĐÃ CHỐT VÀ KHÓA
+
+            <!-- =================================================
+                 CLOSED BANNER
+            ================================================== -->
+
+            <div
+                id="closed-banner"
+                class="
+                    hidden
+                    glass-card
+                    border-amber-400/40
+                    bg-amber-500/10
+                    text-amber-200
+                    p-4
+                    rounded-2xl
+                    text-xs
+                    space-y-1
+                "
+            >
+
+                <div
+                    class="
+                        flex
+                        items-center
+                        gap-2
+                        font-bold
+                        text-amber-300
+                        text-sm
+                    "
+                >
+                    <i class="fa-solid fa-lock"></i>
+                    PHÒNG ĐÃ CHỐT VÀ KHÓA
                 </div>
-                <p class="text-amber-200/80 leading-relaxed">Bảng điểm đã đóng cố định. Hệ thống tự động xóa dữ liệu sau <b>72 giờ</b>.</p>
+
+                <p
+                    class="
+                        text-amber-200/80
+                        leading-relaxed
+                    "
+                >
+                    Bảng điểm đã đóng cố định.
+                    Hệ thống sẽ tự xóa dữ liệu sau
+                    <b>72 giờ</b>.
+                </p>
+
             </div>
 
-            <!-- CẢNH BÁO CHƯA ĐIỀN ĐIỂM -->
-            <div id="alert-banner" class="hidden glass-card border-rose-500/50 bg-rose-500/10 text-rose-200 p-4 rounded-2xl text-xs flex items-start gap-3">
-                <i class="fa-solid fa-circle-exclamation text-rose-400 text-lg mt-0.5"></i>
+
+            <!-- =================================================
+                 WARNING
+            ================================================== -->
+
+            <div
+                id="alert-banner"
+                class="
+                    hidden
+                    glass-card
+                    border-rose-500/50
+                    bg-rose-500/10
+                    text-rose-200
+                    p-4
+                    rounded-2xl
+                    text-xs
+                    flex
+                    items-start
+                    gap-3
+                "
+            >
+
+                <i
+                    class="
+                        fa-solid
+                        fa-circle-exclamation
+                        text-rose-400
+                        text-lg
+                        mt-0.5
+                    "
+                ></i>
+
                 <div>
-                    <p class="font-bold text-rose-300 text-sm">Chưa thể tính điểm!</p>
-                    <p id="alert-message" class="mt-0.5 text-rose-200/80">Những người chưa điền điểm: ...</p>
+
+                    <p
+                        class="
+                            font-bold
+                            text-rose-300
+                            text-sm
+                        "
+                    >
+                        Chưa thể tính điểm!
+                    </p>
+
+                    <p
+                        id="alert-message"
+                        class="mt-0.5 text-rose-200/80"
+                    >
+                        ...
+                    </p>
+
                 </div>
+
             </div>
 
-            <!-- THÔNG TIN PHÒNG & QR -->
-            <div class="glass-card rounded-2xl p-4 text-center space-y-3">
-                <button onclick="toggleQR()" class="text-xs text-sky-300 hover:text-sky-100 font-semibold flex items-center justify-center gap-2 mx-auto">
-                    <i class="fa-solid fa-qrcode"></i> Hiện / Ẩn Mã QR Mời Bạn Bè
+
+            <!-- =================================================
+                 ROOM / QR
+            ================================================== -->
+
+            <div
+                class="
+                    glass-card
+                    rounded-2xl
+                    p-4
+                    text-center
+                    space-y-3
+                "
+            >
+
+                <div
+                    class="
+                        text-[10px]
+                        text-sky-300/50
+                        uppercase
+                        tracking-widest
+                    "
+                >
+                    Mã phòng
+                </div>
+
+                <div
+                    id="room-code-display"
+                    class="
+                        text-2xl
+                        font-black
+                        tracking-[.25em]
+                        text-sky-200
+                    "
+                >
+                    ------
+                </div>
+
+
+                <button
+                    onclick="toggleQR()"
+                    class="
+                        text-xs
+                        text-sky-300
+                        hover:text-sky-100
+                        font-semibold
+                        flex
+                        items-center
+                        justify-center
+                        gap-2
+                        mx-auto
+                    "
+                >
+                    <i class="fa-solid fa-qrcode"></i>
+                    Hiện / Ẩn Mã QR
                 </button>
-                <div id="qr-container" class="hidden flex-col items-center pt-2 space-y-3">
-                    <div id="qrcode" class="p-3 bg-white rounded-2xl shadow-inner"></div>
-                    <button onclick="copyLink()" class="glass-input px-4 py-2 rounded-xl text-xs text-sky-200 hover:bg-sky-400/20 transition flex items-center gap-2">
-                        <i class="fa-regular fa-copy"></i> Sao Chép Đường Dẫn
+
+
+                <div
+                    id="qr-container"
+                    class="
+                        hidden
+                        flex-col
+                        items-center
+                        pt-2
+                        space-y-3
+                    "
+                >
+
+                    <div
+                        id="qrcode"
+                        class="
+                            p-3
+                            bg-white
+                            rounded-2xl
+                            shadow-inner
+                        "
+                    ></div>
+
+
+                    <button
+                        onclick="copyLink()"
+                        class="
+                            glass-input
+                            px-4
+                            py-2
+                            rounded-xl
+                            text-xs
+                            text-sky-200
+                            hover:bg-sky-400/20
+                            transition
+                            flex
+                            items-center
+                            gap-2
+                        "
+                    >
+                        <i class="fa-regular fa-copy"></i>
+                        Sao Chép Đường Dẫn
                     </button>
+
                 </div>
+
             </div>
 
-            <!-- BẢNG TỔNG ĐIỂM CHUNG CUỘC -->
-            <div class="glass-card rounded-3xl p-5 space-y-4">
-                <div class="flex justify-between items-center border-b border-sky-400/20 pb-3">
-                    <h3 class="font-bold text-sky-200 flex items-center gap-2">
-                        <i class="fa-solid fa-trophy text-amber-400"></i> Bảng Tổng Kết Điểm
+
+            <!-- =================================================
+                 LEADERBOARD
+            ================================================== -->
+
+            <div
+                class="
+                    glass-card
+                    rounded-3xl
+                    p-5
+                    space-y-4
+                "
+            >
+
+                <div
+                    class="
+                        flex
+                        justify-between
+                        items-center
+                        border-b
+                        border-sky-400/20
+                        pb-3
+                        gap-3
+                    "
+                >
+
+                    <h3
+                        class="
+                            font-bold
+                            text-sky-200
+                            flex
+                            items-center
+                            gap-2
+                        "
+                    >
+                        <i class="fa-solid fa-trophy text-amber-400"></i>
+                        Bảng Tổng Kết Điểm
                     </h3>
-                    <span id="round-count" class="text-xs bg-sky-400/20 text-sky-300 border border-sky-400/30 px-3 py-1 rounded-full font-medium">Ván: 0</span>
+
+                    <span
+                        id="round-count"
+                        class="
+                            text-xs
+                            bg-sky-400/20
+                            text-sky-300
+                            border
+                            border-sky-400/30
+                            px-3
+                            py-1
+                            rounded-full
+                            font-medium
+                            shrink-0
+                        "
+                    >
+                        Ván: 0
+                    </span>
+
                 </div>
-                <div id="leaderboard" class="space-y-2"></div>
+
+
+                <div
+                    id="leaderboard"
+                    class="space-y-2"
+                ></div>
+
             </div>
 
-            <!-- DANH SÁCH KHÁN GIẢ ĐANG XEM -->
-            <div id="spectators-section" class="glass-card rounded-2xl p-4 space-y-2 hidden">
-                <h4 class="text-xs font-bold text-purple-300 flex items-center gap-2">
-                    <i class="fa-solid fa-eye text-purple-400"></i> Khán Giả Đang Xem (<span id="spectator-count">0</span>):
+
+            <!-- =================================================
+                 SPECTATORS
+            ================================================== -->
+
+            <div
+                id="spectators-section"
+                class="
+                    glass-card
+                    rounded-2xl
+                    p-4
+                    space-y-2
+                    hidden
+                "
+            >
+
+                <h4
+                    class="
+                        text-xs
+                        font-bold
+                        text-purple-300
+                        flex
+                        items-center
+                        gap-2
+                    "
+                >
+                    <i
+                        class="
+                            fa-solid
+                            fa-eye
+                            text-purple-400
+                        "
+                    ></i>
+
+                    Khán Giả Đang Xem
+                    (
+                    <span id="spectator-count">0</span>
+                    ):
                 </h4>
-                <div id="spectators-list" class="flex flex-wrap gap-1.5 text-xs"></div>
+
+
+                <div
+                    id="spectators-list"
+                    class="flex flex-wrap gap-1.5 text-xs"
+                ></div>
+
             </div>
 
-            <!-- NHẬP ĐIỂM VÁN HIỆN TẠI (CHỈ DÀNH CHO NGƯỜI CHƠI) -->
-            <div id="input-section" class="glass-card rounded-3xl p-5 space-y-4">
-                <div class="flex justify-between items-center border-b border-sky-400/20 pb-2">
+
+            <!-- =================================================
+                 INPUT
+            ================================================== -->
+
+            <div
+                id="input-section"
+                class="
+                    glass-card
+                    rounded-3xl
+                    p-5
+                    space-y-4
+                "
+            >
+
+                <div
+                    class="
+                        flex
+                        justify-between
+                        items-center
+                        border-b
+                        border-sky-400/20
+                        pb-2
+                        gap-3
+                    "
+                >
+
                     <div>
-                        <h3 class="font-bold text-sky-100 flex items-center gap-2">
-                            <i class="fa-solid fa-pen-to-square text-cyan-400"></i> Nhập Điểm Ván
+
+                        <h3
+                            class="
+                                font-bold
+                                text-sky-100
+                                flex
+                                items-center
+                                gap-2
+                            "
+                        >
+                            <i
+                                class="
+                                    fa-solid
+                                    fa-pen-to-square
+                                    text-cyan-400
+                                "
+                            ></i>
+                            Nhập Điểm Ván
                         </h3>
-                        <p class="text-[11px] text-sky-300/70 mt-0.5">Tích **Thắng** hoặc nhập điểm thua (-50, +20...)</p>
+
+                        <p
+                            class="
+                                text-[11px]
+                                text-sky-300/70
+                                mt-0.5
+                            "
+                        >
+                            Chọn
+                            <b>Thắng</b>
+                            hoặc nhập điểm thua.
+                        </p>
+
                     </div>
-                    <!-- Nút Nhường Ghế Cho Người Xem -->
-                    <button id="btn-swap-seat" onclick="openSwapModal()" class="hidden bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-400/40 px-2.5 py-1.5 rounded-xl text-xs font-bold transition">
-                        <i class="fa-solid fa-arrow-rotate-left"></i> Nhường Ghế
+
+
+                    <button
+                        id="btn-swap-seat"
+                        onclick="openSwapModal()"
+                        class="
+                            hidden
+                            bg-purple-500/20
+                            hover:bg-purple-500/30
+                            text-purple-300
+                            border
+                            border-purple-400/40
+                            px-2.5
+                            py-1.5
+                            rounded-xl
+                            text-xs
+                            font-bold
+                            transition
+                            shrink-0
+                        "
+                    >
+                        <i class="fa-solid fa-arrow-rotate-left"></i>
+                        Nhường
                     </button>
+
                 </div>
-                
-                <div id="players-input-list" class="space-y-3"></div>
 
-                <button onclick="submitRound()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-emerald-500/25 active:scale-95 transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-check"></i> Chốt Điểm Ván Này
+
+                <div
+                    id="players-input-list"
+                    class="space-y-3"
+                ></div>
+
+
+                <button
+                    id="submit-round-button"
+                    onclick="submitRound()"
+                    class="
+                        w-full
+                        bg-gradient-to-r
+                        from-emerald-500
+                        to-teal-600
+                        hover:from-emerald-400
+                        hover:to-teal-500
+                        text-white
+                        font-bold
+                        py-3.5
+                        rounded-2xl
+                        shadow-lg
+                        shadow-emerald-500/25
+                        active:scale-95
+                        transition
+                        flex
+                        items-center
+                        justify-center
+                        gap-2
+                    "
+                >
+                    <i class="fa-solid fa-check"></i>
+                    Chốt Điểm Ván Này
                 </button>
+
             </div>
 
-            <!-- NÚT KHÓA PHÒNG (DÀNH CHO CHỦ PHÒNG) -->
-            <div id="host-actions" class="hidden">
-                <button onclick="closeRoom()" class="w-full bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-rose-600/30 active:scale-95 transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-lock"></i> Khóa & Chốt Bảng (Tự xóa sau 72h)
+
+            <!-- =================================================
+                 HOST ACTIONS
+            ================================================== -->
+
+            <div
+                id="host-actions"
+                class="hidden"
+            >
+
+                <button
+                    onclick="closeRoom()"
+                    class="
+                        w-full
+                        bg-gradient-to-r
+                        from-rose-600
+                        to-red-700
+                        hover:from-rose-500
+                        hover:to-red-600
+                        text-white
+                        font-bold
+                        py-3.5
+                        rounded-2xl
+                        shadow-lg
+                        shadow-rose-600/30
+                        active:scale-95
+                        transition
+                        flex
+                        items-center
+                        justify-center
+                        gap-2
+                    "
+                >
+                    <i class="fa-solid fa-lock"></i>
+                    Khóa & Chốt Bảng
                 </button>
+
             </div>
 
-            <!-- LỊCH SỬ CÁC VÁN -->
-            <div class="glass-card rounded-3xl p-5 space-y-3">
-                <div class="flex justify-between items-center border-b border-sky-400/20 pb-3">
-                    <h3 class="font-bold text-sky-200 flex items-center gap-2">
-                        <i class="fa-solid fa-clock-rotate-left text-sky-400"></i> Lịch Sử Lũy Kế
+
+            <!-- =================================================
+                 HISTORY
+            ================================================== -->
+
+            <div
+                class="
+                    glass-card
+                    rounded-3xl
+                    p-5
+                    space-y-3
+                "
+            >
+
+                <div
+                    class="
+                        flex
+                        justify-between
+                        items-center
+                        border-b
+                        border-sky-400/20
+                        pb-3
+                    "
+                >
+
+                    <h3
+                        class="
+                            font-bold
+                            text-sky-200
+                            flex
+                            items-center
+                            gap-2
+                        "
+                    >
+                        <i
+                            class="
+                                fa-solid
+                                fa-clock-rotate-left
+                                text-sky-400
+                            "
+                        ></i>
+                        Lịch Sử Lũy Kế
                     </h3>
-                    <span id="host-badge" class="hidden text-[10px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-2.5 py-0.5 rounded-lg font-bold">
+
+
+                    <span
+                        id="host-badge"
+                        class="
+                            hidden
+                            text-[10px]
+                            bg-amber-400/20
+                            text-amber-300
+                            border
+                            border-amber-400/30
+                            px-2.5
+                            py-0.5
+                            rounded-lg
+                            font-bold
+                        "
+                    >
                         👑 Chủ Phòng
                     </span>
+
                 </div>
-                <div id="history-list" class="space-y-2 text-xs max-h-64 overflow-y-auto pr-1"></div>
+
+
+                <div
+                    id="history-list"
+                    class="
+                        space-y-2
+                        text-xs
+                        max-h-80
+                        overflow-y-auto
+                        pr-1
+                        scrollbar-thin
+                    "
+                ></div>
+
             </div>
-        </div>
+
+        </section>
 
     </main>
 
-    <!-- MODAL CHỈ ĐỊNH THAY NGƯỜI CHƠI -->
-    <div id="swap-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="glass-card border-purple-400/40 rounded-3xl p-6 w-full max-w-sm space-y-5 shadow-2xl">
-            <h3 class="font-bold text-lg text-purple-200 flex items-center gap-2">
-                <i class="fa-solid fa-user-gear text-purple-400"></i> Chọn Người Xem Vào Thay
+
+    <!-- =========================================================
+         SWAP MODAL
+    ========================================================== -->
+
+    <div
+        id="swap-modal"
+        class="
+            hidden
+            fixed
+            inset-0
+            bg-slate-950/80
+            backdrop-blur-md
+            z-50
+            flex
+            items-center
+            justify-center
+            p-4
+        "
+    >
+
+        <div
+            class="
+                glass-card
+                border-purple-400/40
+                rounded-3xl
+                p-6
+                w-full
+                max-w-sm
+                space-y-5
+                shadow-2xl
+                modal-enter
+            "
+        >
+
+            <h3
+                class="
+                    font-bold
+                    text-lg
+                    text-purple-200
+                    flex
+                    items-center
+                    gap-2
+                "
+            >
+                <i
+                    class="
+                        fa-solid
+                        fa-user-gear
+                        text-purple-400
+                    "
+                ></i>
+                Chọn Người Xem Vào Thay
             </h3>
-            <p class="text-xs text-slate-300">Bạn sẽ chuyển sang làm Khán Giả và người được chọn sẽ trở thành Người Chơi chính thức.</p>
-            <div id="swap-spectators-list" class="space-y-2 max-h-52 overflow-y-auto pr-1"></div>
-            <button onclick="closeSwapModal()" class="w-full glass-input py-3 rounded-xl font-bold text-sky-300 text-xs">Đóng / Hủy</button>
+
+
+            <p
+                class="
+                    text-xs
+                    text-slate-300
+                    leading-relaxed
+                "
+            >
+                Bạn sẽ chuyển sang làm
+                <b>Khán Giả</b>
+                và người được chọn sẽ trở thành
+                <b>Người Chơi</b>.
+            </p>
+
+
+            <div
+                id="swap-spectators-list"
+                class="
+                    space-y-2
+                    max-h-52
+                    overflow-y-auto
+                    pr-1
+                    scrollbar-thin
+                "
+            ></div>
+
+
+            <button
+                onclick="closeSwapModal()"
+                class="
+                    w-full
+                    glass-input
+                    py-3
+                    rounded-xl
+                    font-bold
+                    text-sky-300
+                    text-xs
+                "
+            >
+                Đóng / Hủy
+            </button>
+
         </div>
+
     </div>
 
-    <!-- MODAL SỬA ĐIỂM -->
-    <div id="edit-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="glass-card border-sky-400/40 rounded-3xl p-6 w-full max-w-sm space-y-5 shadow-2xl">
-            <h3 class="font-bold text-lg text-sky-100 flex items-center gap-2" id="modal-title">
-                <i class="fa-solid fa-pen-nib text-amber-400"></i> Sửa Điểm Ván
+
+    <!-- =========================================================
+         EDIT MODAL
+    ========================================================== -->
+
+    <div
+        id="edit-modal"
+        class="
+            hidden
+            fixed
+            inset-0
+            bg-slate-950/80
+            backdrop-blur-md
+            z-50
+            flex
+            items-center
+            justify-center
+            p-4
+        "
+    >
+
+        <div
+            class="
+                glass-card
+                border-sky-400/40
+                rounded-3xl
+                p-6
+                w-full
+                max-w-sm
+                space-y-5
+                shadow-2xl
+                modal-enter
+            "
+        >
+
+            <h3
+                class="
+                    font-bold
+                    text-lg
+                    text-sky-100
+                    flex
+                    items-center
+                    gap-2
+                "
+                id="modal-title"
+            >
+                <i
+                    class="
+                        fa-solid
+                        fa-pen-nib
+                        text-amber-400
+                    "
+                ></i>
+                Sửa Điểm Ván
             </h3>
-            <div id="modal-inputs" class="space-y-3 max-h-60 overflow-y-auto pr-1"></div>
-            <div class="flex gap-3 pt-2">
-                <button onclick="closeEditModal()" class="flex-1 glass-input py-3 rounded-xl font-bold text-sky-300 text-xs">Hủy</button>
-                <button onclick="saveEditedRound()" class="flex-1 bg-gradient-to-r from-sky-500 to-blue-600 font-bold py-3 rounded-xl text-white text-xs shadow-lg shadow-sky-500/30">Lưu Thay Đổi</button>
+
+
+            <div
+                id="modal-inputs"
+                class="
+                    space-y-3
+                    max-h-60
+                    overflow-y-auto
+                    pr-1
+                    scrollbar-thin
+                "
+            ></div>
+
+
+            <div
+                class="
+                    flex
+                    gap-3
+                    pt-2
+                "
+            >
+
+                <button
+                    onclick="closeEditModal()"
+                    class="
+                        flex-1
+                        glass-input
+                        py-3
+                        rounded-xl
+                        font-bold
+                        text-sky-300
+                        text-xs
+                    "
+                >
+                    Hủy
+                </button>
+
+
+                <button
+                    onclick="saveEditedRound()"
+                    class="
+                        flex-1
+                        bg-gradient-to-r
+                        from-sky-500
+                        to-blue-600
+                        font-bold
+                        py-3
+                        rounded-xl
+                        text-white
+                        text-xs
+                        shadow-lg
+                        shadow-sky-500/30
+                    "
+                >
+                    Lưu Thay Đổi
+                </button>
+
             </div>
+
         </div>
+
     </div>
+
+
+    <!-- =========================================================
+         TOAST
+    ========================================================== -->
+
+    <div id="toast" class="toast"></div>
+
+
+    <!-- =========================================================
+         APPLICATION
+    ========================================================== -->
 
     <script>
-        let roomId = '';
-        let myName = '';
-        let isPlayer = false; // Trạng thái: true (Người chơi) / false (Khán giả)
-        let roomData = { host: '', players: {}, spectators: {}, rounds: [], warningMsg: '', isClosed: false, closedAt: null };
-        let editingRoundIndex = -1;
-        const EXPIRE_TIME_MS = 72 * 60 * 60 * 1000;
+
+        "use strict";
+
+
+        /* ========================================================
+           CONSTANTS
+        ========================================================= */
+
         const MAX_PLAYERS = 5;
 
-        window.onload = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const roomParam = urlParams.get('room');
-            if (roomParam) roomId = roomParam.toUpperCase();
+        const EXPIRE_TIME_MS =
+            72 * 60 * 60 * 1000;
+
+        const ROOM_PREFIX = "roomsV2";
+
+        const PLAYER_ID_PREFIX =
+            "thuyphong_player_";
+
+        const NAME_MAX_LENGTH = 30;
+
+
+        /* ========================================================
+           STATE
+        ========================================================= */
+
+        let roomId = "";
+
+        let myPlayerId = "";
+
+        let myName = "";
+
+        let isPlayer = false;
+
+        let isFirebaseReady = false;
+
+        let editingRoundIndex = -1;
+
+        let qrGenerated = false;
+
+        let roomUnsubscribe = null;
+
+        let reactionsUnsubscribe = null;
+
+        let roomData = {
+            hostId: "",
+            players: {},
+            spectators: {},
+            rounds: [],
+            warningMsg: "",
+            isClosed: false,
+            closedAt: null,
+            createdAt: null
         };
 
+
+        /* ========================================================
+           DOM HELPERS
+        ======================================================== */
+
+        const $ = (id) =>
+            document.getElementById(id);
+
+
+        /* ========================================================
+           HTML ESCAPE
+        ======================================================== */
+
+        function escapeHTML(value) {
+
+            return String(value ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+
+        /* ========================================================
+           NORMALIZE NAME
+        ======================================================== */
+
+        function normalizeName(name) {
+
+            return String(name || "")
+                .trim()
+                .replace(/\s+/g, " ")
+                .slice(0, NAME_MAX_LENGTH);
+        }
+
+
+        /* ========================================================
+           GENERATE LOCAL PLAYER ID
+        ======================================================== */
+
+        function generateLocalPlayerId() {
+
+            const random =
+                crypto.randomUUID
+                    ? crypto.randomUUID()
+                    : (
+                        Date.now().toString(36) +
+                        Math.random()
+                            .toString(36)
+                            .substring(2)
+                    );
+
+            return `p_${random.replace(/-/g, "")}`;
+        }
+
+
+        /* ========================================================
+           GET PLAYER ID FOR ROOM
+        ======================================================== */
+
+        function getStoredPlayerId(room) {
+
+            const key =
+                PLAYER_ID_PREFIX +
+                room;
+
+            let id =
+                localStorage.getItem(key);
+
+            if (!id) {
+
+                id =
+                    generateLocalPlayerId();
+
+                localStorage.setItem(
+                    key,
+                    id
+                );
+            }
+
+            return id;
+        }
+
+
+        /* ========================================================
+           GET FIREBASE ROOM REF
+        ======================================================== */
+
+        function getRoomRef() {
+
+            return window.FirebaseAPI.ref(
+                window.FirebaseAPI.db,
+                `${ROOM_PREFIX}/${roomId}`
+            );
+        }
+
+
+        /* ========================================================
+           GET REACTION REF
+        ======================================================== */
+
+        function getReactionRef() {
+
+            return window.FirebaseAPI.ref(
+                window.FirebaseAPI.db,
+                `reactionsV2/${roomId}`
+            );
+        }
+
+
+        /* ========================================================
+           SHOW TOAST
+        ======================================================== */
+
+        let toastTimer = null;
+
+        function showToast(message) {
+
+            const toast = $("toast");
+
+            toast.innerText = message;
+
+            toast.classList.add("show");
+
+            clearTimeout(toastTimer);
+
+            toastTimer =
+                setTimeout(() => {
+                    toast.classList.remove("show");
+                }, 2500);
+        }
+
+
+        /* ========================================================
+           ALERT
+        ======================================================== */
+
+        function showAlert(message) {
+
+            alert(message);
+        }
+
+
+        /* ========================================================
+           FORMAT SCORE
+        ======================================================== */
+
+        function formatScore(score) {
+
+            const n =
+                Math.round(
+                    Number(score || 0) * 100
+                ) / 100;
+
+            if (n > 0) {
+                return `+${n}`;
+            }
+
+            return String(n);
+        }
+
+
+        /* ========================================================
+           PARSE SCORE
+        ======================================================== */
+
+        function parseScore(value) {
+
+            if (
+                value === null ||
+                value === undefined ||
+                String(value).trim() === ""
+            ) {
+                return null;
+            }
+
+            const normalized =
+                String(value)
+                    .trim()
+                    .replace(",", ".");
+
+            const number =
+                Number(normalized);
+
+            if (!Number.isFinite(number)) {
+                return null;
+            }
+
+            return Math.round(number * 100) / 100;
+        }
+
+
+        /* ========================================================
+           INITIALIZATION
+        ======================================================== */
+
+        window.addEventListener(
+            "firebase-ready",
+            () => {
+
+                isFirebaseReady = true;
+
+                $("connection-badge")
+                    .classList
+                    .remove("hidden");
+
+                const params =
+                    new URLSearchParams(
+                        window.location.search
+                    );
+
+                const roomParam =
+                    params.get("room");
+
+                if (roomParam) {
+
+                    roomId =
+                        sanitizeRoomId(roomParam);
+
+                }
+
+                if (roomId) {
+
+                    $("room-info").innerText =
+                        `Phòng ${roomId} - Nhập tên để tham gia`;
+
+                } else {
+
+                    $("room-info").innerText =
+                        "Tạo phòng mới hoặc tham gia phòng";
+
+                }
+
+            }
+        );
+
+
+        /* ========================================================
+           SANITIZE ROOM ID
+        ======================================================== */
+
+        function sanitizeRoomId(value) {
+
+            return String(value || "")
+                .toUpperCase()
+                .replace(/[^A-Z0-9]/g, "")
+                .slice(0, 12);
+        }
+
+
+        /* ========================================================
+           GENERATE ROOM ID
+        ======================================================== */
+
+        function generateRoomId() {
+
+            return Math.random()
+                .toString(36)
+                .substring(2, 8)
+                .toUpperCase();
+        }
+
+
+        /* ========================================================
+           ENTER KEY
+        ======================================================== */
+
+        $("username").addEventListener(
+            "keydown",
+            (event) => {
+
+                if (event.key === "Enter") {
+                    joinRoom();
+                }
+
+            }
+        );
+
+
+        /* ========================================================
+           JOIN / CREATE ROOM
+        ======================================================== */
+
         async function joinRoom() {
-            const nameInput = document.getElementById('username').value.trim();
-            if (!nameInput) return alert('Vui lòng nhập biệt danh của bạn!');
 
-            myName = nameInput;
-            if (!roomId) roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+            if (!isFirebaseReady) {
 
-            const roomRef = window.dbRef(window.db, 'rooms/' + roomId);
-            const snapshot = await window.dbGet(roomRef);
-            const existingData = snapshot.val();
+                showAlert(
+                    "Firebase chưa sẵn sàng. Vui lòng thử lại."
+                );
 
-            document.getElementById('step-login').classList.add('hidden');
-            document.getElementById('main-panel').classList.remove('hidden');
+                return;
+            }
 
-            const roomUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-            document.getElementById('qrcode').innerHTML = "";
-            new QRCode(document.getElementById("qrcode"), { text: roomUrl, width: 120, height: 120 });
 
-            // LẮNG NGHE REALTIME PHÒNG
-            window.dbOnValue(roomRef, (snap) => {
-                const data = snap.val();
-                
-                if (data) {
-                    // TỰ ĐỘNG XÓA DỮ LIỆU SAU 72H
-                    if (data.isClosed && data.closedAt) {
-                        if (Date.now() - data.closedAt >= EXPIRE_TIME_MS) {
-                            window.dbRemove(window.dbRef(window.db, 'rooms/' + roomId));
-                            alert("Phòng chơi này đã hết thời hạn 72h!");
-                            window.location.href = window.location.pathname;
+            const name =
+                normalizeName(
+                    $("username").value
+                );
+
+
+            if (!name) {
+
+                showAlert(
+                    "Vui lòng nhập biệt danh!"
+                );
+
+                $("username").focus();
+
+                return;
+            }
+
+
+            if (name.length < 1) {
+
+                showAlert(
+                    "Tên không hợp lệ."
+                );
+
+                return;
+            }
+
+
+            myName = name;
+
+
+            /*
+             * Nếu URL chưa có room:
+             * tạo room mới.
+             */
+
+            if (!roomId) {
+
+                roomId =
+                    generateRoomId();
+
+                window.history.replaceState(
+                    {},
+                    "",
+                    `${window.location.pathname}?room=${roomId}`
+                );
+            }
+
+
+            myPlayerId =
+                getStoredPlayerId(roomId);
+
+
+            setJoinLoading(true);
+
+
+            try {
+
+                const result =
+                    await addParticipantAtomically(
+                        roomId,
+                        myPlayerId,
+                        myName
+                    );
+
+
+                if (!result.ok) {
+
+                    showAlert(
+                        result.message ||
+                        "Không thể tham gia phòng."
+                    );
+
+                    setJoinLoading(false);
+
+                    return;
+                }
+
+
+                /*
+                 * UI
+                 */
+
+                $("step-login")
+                    .classList
+                    .add("hidden");
+
+                $("main-panel")
+                    .classList
+                    .remove("hidden");
+
+
+                $("room-code-display")
+                    .innerText = roomId;
+
+
+                generateQRCode();
+
+
+                /*
+                 * Lắng nghe phòng.
+                 */
+
+                subscribeToRoom();
+
+
+                /*
+                 * Lắng nghe reaction.
+                 */
+
+                subscribeToReactions();
+
+
+                setJoinLoading(false);
+
+
+                showToast(
+                    result.role === "player"
+                        ? "Đã tham gia với vai trò Người Chơi"
+                        : "Phòng đủ 5 người — bạn là Khán Giả"
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "JOIN ERROR:",
+                    error
+                );
+
+                setJoinLoading(false);
+
+                showAlert(
+                    "Không thể kết nối phòng. Kiểm tra Firebase Rules hoặc Internet."
+                );
+
+            }
+
+        }
+
+
+        /* ========================================================
+           JOIN ATOMICALLY
+        ======================================================== */
+
+        async function addParticipantAtomically(
+            room,
+            playerId,
+            name
+        ) {
+
+            const roomRef =
+                window.FirebaseAPI.ref(
+                    window.FirebaseAPI.db,
+                    `${ROOM_PREFIX}/${room}`
+                );
+
+
+            let result = {
+                ok: false,
+                role: null,
+                message: ""
+            };
+
+
+            await window.FirebaseAPI.runTransaction(
+                roomRef,
+                (current) => {
+
+                    /*
+                     * Tạo phòng mới.
+                     */
+
+                    if (!current) {
+
+                        result = {
+                            ok: true,
+                            role: "player"
+                        };
+
+                        return {
+                            hostId: playerId,
+
+                            players: {
+                                [playerId]: {
+                                    name: name,
+                                    isWin: false,
+                                    inputVal: "",
+                                    joinedAt: Date.now()
+                                }
+                            },
+
+                            spectators: {},
+
+                            rounds: [],
+
+                            warningMsg: "",
+
+                            isClosed: false,
+
+                            closedAt: null,
+
+                            createdAt: Date.now()
+                        };
+                    }
+
+
+                    /*
+                     * Normalize dữ liệu cũ.
+                     */
+
+                    if (!current.players) {
+                        current.players = {};
+                    }
+
+                    if (!current.spectators) {
+                        current.spectators = {};
+                    }
+
+                    if (!current.rounds) {
+                        current.rounds = [];
+                    }
+
+
+                    /*
+                     * Phòng đã đóng.
+                     */
+
+                    if (current.isClosed) {
+
+                        result = {
+                            ok: false,
+                            message:
+                                "Phòng này đã được khóa."
+                        };
+
+                        return;
+                    }
+
+
+                    /*
+                     * Đã là Player.
+                     */
+
+                    if (
+                        current.players[playerId]
+                    ) {
+
+                        current.players[playerId].name =
+                            name;
+
+                        result = {
+                            ok: true,
+                            role: "player"
+                        };
+
+                        return current;
+                    }
+
+
+                    /*
+                     * Đã là spectator.
+                     */
+
+                    if (
+                        current.spectators[playerId]
+                    ) {
+
+                        current.spectators[playerId].name =
+                            name;
+
+                        result = {
+                            ok: true,
+                            role: "spectator"
+                        };
+
+                        return current;
+                    }
+
+
+                    /*
+                     * Kiểm tra nickname trùng.
+                     */
+
+                    const normalized =
+                        name.toLocaleLowerCase();
+
+                    const allParticipants = [
+                        ...Object.values(
+                            current.players
+                        ),
+                        ...Object.values(
+                            current.spectators
+                        )
+                    ];
+
+
+                    const duplicate =
+                        allParticipants.some(
+                            participant =>
+                                String(
+                                    participant?.name || ""
+                                )
+                                .toLocaleLowerCase() ===
+                                normalized
+                        );
+
+
+                    if (duplicate) {
+
+                        result = {
+                            ok: false,
+                            message:
+                                "Biệt danh này đã được sử dụng trong phòng. Hãy chọn tên khác."
+                        };
+
+                        return;
+                    }
+
+
+                    /*
+                     * Tối đa 5 player.
+                     */
+
+                    const playerCount =
+                        Object.keys(
+                            current.players
+                        ).length;
+
+
+                    if (
+                        playerCount <
+                        MAX_PLAYERS
+                    ) {
+
+                        current.players[playerId] = {
+                            name: name,
+                            isWin: false,
+                            inputVal: "",
+                            joinedAt: Date.now()
+                        };
+
+                        result = {
+                            ok: true,
+                            role: "player"
+                        };
+
+                    } else {
+
+                        current.spectators[playerId] = {
+                            name: name,
+                            joinedAt: Date.now()
+                        };
+
+                        result = {
+                            ok: true,
+                            role: "spectator"
+                        };
+                    }
+
+
+                    return current;
+
+                }
+            );
+
+
+            return result;
+        }
+
+
+        /* ========================================================
+           SET JOIN LOADING
+        ======================================================== */
+
+        function setJoinLoading(loading) {
+
+            const button =
+                $("join-button");
+
+            if (loading) {
+
+                button.disabled = true;
+
+                button.innerHTML = `
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    Đang tham gia...
+                `;
+
+            } else {
+
+                button.disabled = false;
+
+                button.innerHTML = `
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    Vào / Tạo Phòng
+                `;
+            }
+        }
+
+
+        /* ========================================================
+           SUBSCRIBE ROOM
+        ======================================================== */
+
+        function subscribeToRoom() {
+
+            if (roomUnsubscribe) {
+                roomUnsubscribe();
+            }
+
+
+            const roomRef =
+                getRoomRef();
+
+
+            roomUnsubscribe =
+                window.FirebaseAPI.onValue(
+                    roomRef,
+                    async (snapshot) => {
+
+                        const data =
+                            snapshot.val();
+
+
+                        if (!data) {
+
+                            handleRoomDeleted();
+
                             return;
                         }
+
+
+                        roomData =
+                            normalizeRoomData(data);
+
+
+                        /*
+                         * Kiểm tra hết hạn.
+                         */
+
+                        if (
+                            roomData.isClosed &&
+                            roomData.closedAt &&
+                            Date.now() -
+                            Number(roomData.closedAt)
+                            >= EXPIRE_TIME_MS
+                        ) {
+
+                            /*
+                             * Chỉ thử xóa.
+                             * Rules quyết định có được phép hay không.
+                             */
+
+                            try {
+
+                                await window.FirebaseAPI.remove(
+                                    roomRef
+                                );
+
+                            } catch (error) {
+
+                                console.warn(
+                                    "Không thể auto delete:",
+                                    error
+                                );
+
+                            }
+
+                            return;
+                        }
+
+
+                        updateMyRole();
+
+
+                        renderUI();
+
+                    },
+                    (error) => {
+
+                        console.error(
+                            "ROOM LISTENER:",
+                            error
+                        );
+
+                        showAlert(
+                            "Không thể đọc dữ liệu phòng. Kiểm tra Firebase Rules."
+                        );
+
                     }
+                );
 
-                    roomData = data;
-                    if (!roomData.players) roomData.players = {};
-                    if (!roomData.spectators) roomData.spectators = {};
-                    if (!roomData.rounds) roomData.rounds = [];
-                } else {
-                    roomData.host = myName;
-                }
-
-                if (!roomData.host) roomData.host = myName;
-
-                // PHÂN LOẠI NGƯỜI CHƠI HOẶC KHÁN GIẢ
-                const playerNames = Object.keys(roomData.players);
-                const spectatorNames = Object.keys(roomData.spectators);
-
-                if (playerNames.includes(myName)) {
-                    isPlayer = true;
-                } else if (spectatorNames.includes(myName)) {
-                    isPlayer = false;
-                } else {
-                    // Nếu người mới tham gia:
-                    if (playerNames.length < MAX_PLAYERS) {
-                        isPlayer = true;
-                        window.dbUpdate(window.dbRef(window.db, `rooms/${roomId}`), {
-                            host: roomData.host,
-                            [`players/${myName}`]: { isWin: false, inputVal: '' }
-                        });
-                    } else {
-                        isPlayer = false;
-                        window.dbUpdate(window.dbRef(window.db, `rooms/${roomId}`), {
-                            host: roomData.host,
-                            [`spectators/${myName}`]: true
-                        });
-                    }
-                }
-
-                renderUI();
-            });
-
-            // LẮNG NGHE CỔ VỦ & HIỆU ỨNG REALTIME
-            const reactionsRef = window.dbRef(window.db, `reactions/${roomId}`);
-            window.dbOnValue(reactionsRef, (snap) => {
-                const reactData = snap.val();
-                if (reactData) {
-                    const latestKey = Object.keys(reactData).pop();
-                    const react = reactData[latestKey];
-                    // Chỉ chạy hiệu ứng nếu phản hồi mới xảy ra trong 3 giây gần đây
-                    if (Date.now() - react.timestamp < 3000) {
-                        triggerReactionEffect(react.type, react.sender, react.target);
-                    }
-                }
-            });
         }
+
+
+        /* ========================================================
+           NORMALIZE ROOM DATA
+        ======================================================== */
+
+        function normalizeRoomData(data) {
+
+            return {
+
+                hostId:
+                    data.hostId || "",
+
+                players:
+                    data.players || {},
+
+                spectators:
+                    data.spectators || {},
+
+                rounds:
+                    Array.isArray(data.rounds)
+                        ? data.rounds
+                        : Object.values(
+                            data.rounds || {}
+                        ),
+
+                warningMsg:
+                    data.warningMsg || "",
+
+                isClosed:
+                    Boolean(data.isClosed),
+
+                closedAt:
+                    data.closedAt || null,
+
+                createdAt:
+                    data.createdAt || null
+
+            };
+        }
+
+
+        /* ========================================================
+           UPDATE MY ROLE
+        ======================================================== */
+
+        function updateMyRole() {
+
+            if (
+                roomData.players &&
+                roomData.players[myPlayerId]
+            ) {
+
+                isPlayer = true;
+
+                myName =
+                    roomData
+                        .players[myPlayerId]
+                        .name || myName;
+
+                return;
+            }
+
+
+            if (
+                roomData.spectators &&
+                roomData.spectators[myPlayerId]
+            ) {
+
+                isPlayer = false;
+
+                myName =
+                    roomData
+                        .spectators[myPlayerId]
+                        .name || myName;
+
+                return;
+            }
+
+
+            /*
+             * Không còn trong phòng.
+             */
+
+            isPlayer = false;
+        }
+
+
+        /* ========================================================
+           HANDLE ROOM DELETED
+        ======================================================== */
+
+        function handleRoomDeleted() {
+
+            roomData = {
+                hostId: "",
+                players: {},
+                spectators: {},
+                rounds: [],
+                warningMsg: "",
+                isClosed: false,
+                closedAt: null,
+                createdAt: null
+            };
+
+
+            if (roomUnsubscribe) {
+                roomUnsubscribe();
+                roomUnsubscribe = null;
+            }
+
+
+            if (reactionsUnsubscribe) {
+                reactionsUnsubscribe();
+                reactionsUnsubscribe = null;
+            }
+
+
+            $("main-panel")
+                .classList
+                .add("hidden");
+
+            $("step-login")
+                .classList
+                .remove("hidden");
+
+
+            showAlert(
+                "Phòng không tồn tại hoặc đã hết thời hạn 72 giờ."
+            );
+
+
+            const url =
+                window.location.pathname;
+
+            window.history.replaceState(
+                {},
+                "",
+                url
+            );
+
+            roomId = "";
+
+        }
+
+
+        /* ========================================================
+           RENDER UI
+        ======================================================== */
 
         function renderUI() {
-            const isHost = roomData.host === myName;
-            const currentPlayers = Object.keys(roomData.players || {});
-            const currentSpectators = Object.keys(roomData.spectators || {});
 
-            document.getElementById('room-info').innerText = `Mã: ${roomId} | ${myName} ${isHost ? '👑' : ''}`;
-            document.getElementById('player-count-display').innerText = currentPlayers.length;
+            const players =
+                roomData.players || {};
 
-            // Hiển thị vai trò
-            const roleBadge = document.getElementById('player-role-badge');
+            const spectators =
+                roomData.spectators || {};
+
+
+            const playerIds =
+                Object.keys(players);
+
+            const spectatorIds =
+                Object.keys(spectators);
+
+
+            const isHost =
+                roomData.hostId === myPlayerId;
+
+
+            /*
+             * Header
+             */
+
+            $("room-info").innerText =
+                `Mã: ${roomId} | ${myName}${isHost ? " 👑" : ""}`;
+
+
+            $("room-code-display").innerText =
+                roomId;
+
+
+            $("player-count-display").innerText =
+                playerIds.length;
+
+
+            /*
+             * Role badge.
+             */
+
+            const roleBadge =
+                $("player-role-badge");
+
+
             if (isPlayer) {
-                roleBadge.innerText = '🎮 Người Chơi';
-                roleBadge.className = "text-[11px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2 py-0.5 rounded-full font-bold";
+
+                roleBadge.innerText =
+                    "🎮 Người Chơi";
+
+                roleBadge.className =
+                    `
+                    text-[11px]
+                    bg-emerald-500/20
+                    text-emerald-300
+                    border
+                    border-emerald-400/40
+                    px-2
+                    py-0.5
+                    rounded-full
+                    font-bold
+                    `;
+
             } else {
-                roleBadge.innerText = '👁️ Khán Giả';
-                roleBadge.className = "text-[11px] bg-purple-500/20 text-purple-300 border border-purple-400/40 px-2 py-0.5 rounded-full font-bold";
+
+                roleBadge.innerText =
+                    "👁️ Khán Giả";
+
+                roleBadge.className =
+                    `
+                    text-[11px]
+                    bg-purple-500/20
+                    text-purple-300
+                    border
+                    border-purple-400/40
+                    px-2
+                    py-0.5
+                    rounded-full
+                    font-bold
+                    `;
             }
 
-            // Hiển thị danh sách khán giả
-            const specSection = document.getElementById('spectators-section');
-            const specList = document.getElementById('spectators-list');
-            if (currentSpectators.length > 0) {
-                specSection.classList.remove('hidden');
-                document.getElementById('spectator-count').innerText = currentSpectators.length;
-                specList.innerHTML = currentSpectators.map(name => `
-                    <span class="bg-purple-500/20 border border-purple-400/30 text-purple-200 px-2.5 py-1 rounded-xl">
-                        👁️ ${name} ${name === myName ? '(Tôi)' : ''}
-                    </span>
-                `).join('');
+
+            /*
+             * Spectators.
+             */
+
+            renderSpectators(
+                spectatorIds,
+                spectators
+            );
+
+
+            /*
+             * Swap button.
+             */
+
+            if (
+                isPlayer &&
+                spectatorIds.length > 0 &&
+                !roomData.isClosed
+            ) {
+
+                $("btn-swap-seat")
+                    .classList
+                    .remove("hidden");
+
             } else {
-                specSection.classList.add('hidden');
+
+                $("btn-swap-seat")
+                    .classList
+                    .add("hidden");
             }
 
-            // Hiển thị nút Nhường ghế
-            const btnSwap = document.getElementById('btn-swap-seat');
-            if (isPlayer && currentSpectators.length > 0 && !roomData.isClosed) {
-                btnSwap.classList.remove('hidden');
-            } else {
-                btnSwap.classList.add('hidden');
-            }
 
-            if (isHost) {
-                document.getElementById('host-badge').classList.remove('hidden');
-                if (!roomData.isClosed) document.getElementById('host-actions').classList.remove('hidden');
-                else document.getElementById('host-actions').classList.add('hidden');
-            }
+            /*
+             * Closed state.
+             */
 
             if (roomData.isClosed) {
-                document.getElementById('closed-banner').classList.remove('hidden');
-                document.getElementById('input-section').classList.add('hidden');
+
+                $("closed-banner")
+                    .classList
+                    .remove("hidden");
+
+                $("input-section")
+                    .classList
+                    .add("hidden");
+
+                $("host-actions")
+                    .classList
+                    .add("hidden");
+
             } else {
-                document.getElementById('closed-banner').classList.add('hidden');
-                // Nếu là người chơi mới hiện phần nhập điểm, khán giả thì ẩn
-                if (isPlayer) document.getElementById('input-section').classList.remove('hidden');
-                else document.getElementById('input-section').classList.add('hidden');
-            }
 
-            const alertBanner = document.getElementById('alert-banner');
-            if (roomData.warningMsg && !roomData.isClosed) {
-                document.getElementById('alert-message').innerText = roomData.warningMsg;
-                alertBanner.classList.remove('hidden');
-            } else {
-                alertBanner.classList.add('hidden');
-            }
+                $("closed-banner")
+                    .classList
+                    .add("hidden");
 
-            // Bảng xếp hạng
-            const scores = calculateTotalScores();
-            const lb = document.getElementById('leaderboard');
-            lb.innerHTML = '';
 
-            const sortedPlayers = currentPlayers.map(name => ({
-                name,
-                score: scores[name] || 0
-            })).sort((a, b) => b.score - a.score);
+                if (isPlayer) {
 
-            sortedPlayers.forEach((p, idx) => {
-                const isPos = p.score >= 0;
-                let rankIcon = idx === 0 ? '<i class="fa-solid fa-crown text-amber-400"></i>' : 
-                               idx === 1 ? '<i class="fa-solid fa-medal text-slate-300"></i>' : 
-                               idx === 2 ? '<i class="fa-solid fa-award text-amber-600"></i>' : `<span class="text-xs font-bold text-sky-400">${idx+1}</span>`;
+                    $("input-section")
+                        .classList
+                        .remove("hidden");
 
-                lb.innerHTML += `
-                    <div class="flex justify-between items-center p-3 rounded-2xl glass-input transition">
-                        <div class="flex items-center gap-3">
-                            <div class="w-7 text-center">${rankIcon}</div>
-                            <div>
-                                <p class="font-bold text-sm ${p.name === myName ? 'text-sky-300' : 'text-slate-100'}">
-                                    ${p.name} ${p.name === roomData.host ? '👑' : ''} ${p.name === myName ? '(Tôi)' : ''}
-                                </p>
-                            </div>
-                        </div>
-                        <span class="font-extrabold text-base ${isPos ? 'text-emerald-400 glow-score-pos' : 'text-rose-400 glow-score-neg'}">
-                            ${isPos ? '+' : ''}${p.score}
-                        </span>
-                    </div>
-                `;
-            });
-
-            document.getElementById('round-count').innerText = `Ván: ${(roomData.rounds || []).length}`;
-
-            // Danh sách nhập điểm
-            const inputList = document.getElementById('players-input-list');
-            inputList.innerHTML = '';
-
-            Object.entries(roomData.players).forEach(([pName, pData]) => {
-                const isMe = pName === myName;
-                inputList.innerHTML += `
-                    <div class="p-3.5 rounded-2xl ${isMe ? 'bg-sky-500/10 border-sky-400/40' : 'glass-input'} border space-y-2">
-                        <div class="flex justify-between items-center">
-                            <span class="font-bold text-xs ${isMe ? 'text-sky-300' : 'text-slate-200'}">${pName} ${isMe ? '(Tôi)' : ''}</span>
-                            <label class="flex items-center gap-1.5 cursor-pointer">
-                                <input type="checkbox" ${pData.isWin ? 'checked' : ''} 
-                                    onchange="updateInput('${pName}', 'isWin', this.checked)" 
-                                    class="w-4 h-4 accent-emerald-500 rounded">
-                                <span class="text-xs font-bold text-emerald-400">Thắng</span>
-                            </label>
-                        </div>
-                        <div class="${pData.isWin ? 'hidden' : ''}">
-                            <input type="text" value="${pData.inputVal !== undefined ? pData.inputVal : ''}" 
-                                placeholder="Số điểm (VD: +50 hoặc -50)" 
-                                onchange="updateInput('${pName}', 'inputVal', this.value.trim())"
-                                class="w-full glass-input px-3 py-2 rounded-xl text-xs outline-none">
-                        </div>
-                    </div>
-                `;
-            });
-
-            // Lịch sử
-            const historyList = document.getElementById('history-list');
-            historyList.innerHTML = '';
-            
-            [...(roomData.rounds || [])].forEach((r, idx) => {
-                let details = Object.entries(r.scores)
-                    .map(([name, sc]) => `${name}: <b class="${sc >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${sc >= 0 ? '+' : ''}${sc}</b>`)
-                    .join(' | ');
-
-                historyList.innerHTML = `
-                    <div class="p-3 rounded-2xl glass-input flex justify-between items-center gap-2">
-                        <div class="flex-1 leading-relaxed">
-                            <span class="font-bold text-sky-400">Ván ${idx + 1}:</span> ${details}
-                        </div>
-                        ${(isHost && !roomData.isClosed) ? `<button onclick="openEditModal(${idx})" class="bg-amber-500/20 text-amber-300 border border-amber-400/30 px-2.5 py-1 rounded-xl text-[10px] font-bold"><i class="fa-solid fa-pen"></i> Sửa</button>` : ''}
-                    </div>
-                ` + historyList.innerHTML;
-            });
-        }
-
-        // TÍNH NĂNG CỔ VỦ & HIỆU ỨNG
-        function sendReaction(type) {
-            // Tìm người đang thắng điểm cao nhất để dội nước
-            const scores = calculateTotalScores();
-            let topPlayer = '';
-            let maxScore = -Infinity;
-            Object.entries(scores).forEach(([pName, sc]) => {
-                if (sc > maxScore) { maxScore = sc; topPlayer = pName; }
-            });
-
-            const newRef = window.dbPush(window.dbRef(window.db, `reactions/${roomId}`));
-            window.dbSet(newRef, {
-                type: type,
-                sender: myName,
-                target: topPlayer,
-                timestamp: Date.now()
-            });
-        }
-
-        function triggerReactionEffect(type, sender, target) {
-            if (type === 'heart') {
-                const heart = document.createElement('div');
-                heart.className = 'floating-emoji';
-                heart.innerText = '❤️';
-                heart.style.left = Math.random() * 80 + 10 + 'vw';
-                document.body.appendChild(heart);
-                setTimeout(() => heart.remove(), 3000);
-            } else if (type === 'firework') {
-                confetti({ particleCount: 60, spread: 70, origin: { y: 0.7 } });
-            } else if (type === 'splash') {
-                const splash = document.createElement('div');
-                splash.className = 'water-splash-overlay';
-                splash.innerHTML = `<div>🌊<p class="text-white text-base font-bold text-center mt-2">${sender} đã dội nước vào ${target}!</p></div>`;
-                document.body.appendChild(splash);
-                document.getElementById('main-body').classList.add('shake-screen');
-                
-                setTimeout(() => {
-                    splash.remove();
-                    document.getElementById('main-body').classList.remove('shake-screen');
-                }, 1500);
-            }
-        }
-
-        // TÍNH NĂNG NHƯỜNG CHỖ / THAY NGƯỜI
-        function openSwapModal() {
-            const listContainer = document.getElementById('swap-spectators-list');
-            listContainer.innerHTML = '';
-
-            const currentSpectators = Object.keys(roomData.spectators || {});
-            if (currentSpectators.length === 0) return alert("Hiện tại không có khán giả nào đang xem!");
-
-            currentSpectators.forEach(specName => {
-                listContainer.innerHTML += `
-                    <button onclick="confirmSwapWith('${specName}')" class="w-full glass-input hover:bg-purple-500/20 text-purple-200 p-3 rounded-2xl font-bold text-xs flex justify-between items-center transition">
-                        <span>👁️ ${specName}</span>
-                        <span class="text-[10px] bg-purple-500/40 px-2 py-1 rounded-lg">Chọn Thay</span>
-                    </button>
-                `;
-            });
-
-            document.getElementById('swap-modal').classList.remove('hidden');
-        }
-
-        function closeSwapModal() {
-            document.getElementById('swap-modal').classList.add('hidden');
-        }
-
-        function confirmSwapWith(targetSpectator) {
-            if (confirm(`Bạn chắc chắn muốn nhường vị trí cho ${targetSpectator}? Bạn sẽ trở thành Khán Giả.`)) {
-                let updates = {};
-                // Xóa mình khỏi danh sách người chơi -> Thêm vào khán giả
-                updates[`rooms/${roomId}/players/${myName}`] = null;
-                updates[`rooms/${roomId}/spectators/${myName}`] = true;
-
-                // Xóa khán giả được chọn -> Thêm vào danh sách người chơi
-                updates[`rooms/${roomId}/spectators/${targetSpectator}`] = null;
-                updates[`rooms/${roomId}/players/${targetSpectator}`] = { isWin: false, inputVal: '' };
-
-                window.dbUpdate(window.dbRef(window.db), updates);
-                closeSwapModal();
-            }
-        }
-
-        function updateInput(pName, field, value) {
-            if (roomData.isClosed || !isPlayer) return;
-            let updates = {};
-            updates[`rooms/${roomId}/players/${pName}/${field}`] = value;
-            if (field === 'isWin' && value === true) {
-                updates[`rooms/${roomId}/players/${pName}/inputVal`] = '';
-            }
-            window.dbUpdate(window.dbRef(window.db), updates);
-        }
-
-        function submitRound() {
-            if (roomData.isClosed || !isPlayer) return;
-            let missingPlayers = [];
-            let winners = [];
-            let currentRoundScores = {};
-            let totalLossPool = 0;
-
-            Object.entries(roomData.players).forEach(([pName, pData]) => {
-                if (!pData.isWin && (pData.inputVal === undefined || pData.inputVal === '')) {
-                    missingPlayers.push(pName);
-                }
-            });
-
-            if (missingPlayers.length > 0) {
-                const msg = `Còn người chưa nhập điểm: ${missingPlayers.join(', ')}`;
-                window.dbUpdate(window.dbRef(window.db, `rooms/${roomId}`), { warningMsg: msg });
-                return;
-            }
-
-            Object.entries(roomData.players).forEach(([pName, pData]) => {
-                if (pData.isWin) {
-                    winners.push(pName);
                 } else {
-                    const num = parseFloat(pData.inputVal) || 0;
-                    currentRoundScores[pName] = num;
-                    if (num < 0) totalLossPool += Math.abs(num);
-                }
-            });
 
-            if (winners.length === 0) {
-                alert("Phải có ít nhất 1 người chọn THẮNG!");
+                    $("input-section")
+                        .classList
+                        .add("hidden");
+                }
+
+
+                if (isHost) {
+
+                    $("host-actions")
+                        .classList
+                        .remove("hidden");
+
+                } else {
+
+                    $("host-actions")
+                        .classList
+                        .add("hidden");
+                }
+
+            }
+
+
+            /*
+             * Host badge.
+             */
+
+            if (isHost) {
+
+                $("host-badge")
+                    .classList
+                    .remove("hidden");
+
+            } else {
+
+                $("host-badge")
+                    .classList
+                    .add("hidden");
+            }
+
+
+            /*
+             * Warning.
+             */
+
+            if (
+                roomData.warningMsg &&
+                !roomData.isClosed
+            ) {
+
+                $("alert-message")
+                    .innerText =
+                    roomData.warningMsg;
+
+                $("alert-banner")
+                    .classList
+                    .remove("hidden");
+
+            } else {
+
+                $("alert-banner")
+                    .classList
+                    .add("hidden");
+            }
+
+
+            /*
+             * Leaderboard.
+             */
+
+            renderLeaderboard(
+                playerIds,
+                players
+            );
+
+
+            /*
+             * Input list.
+             */
+
+            if (isPlayer && !roomData.isClosed) {
+
+                renderInputList(
+                    playerIds,
+                    players
+                );
+            }
+
+
+            /*
+             * Round count.
+             */
+
+            $("round-count").innerText =
+                `Ván: ${roomData.rounds.length}`;
+
+
+            /*
+             * History.
+             */
+
+            renderHistory();
+
+        }
+
+
+        /* ========================================================
+           RENDER SPECTATORS
+        ======================================================== */
+
+        function renderSpectators(
+            spectatorIds,
+            spectators
+        ) {
+
+            const section =
+                $("spectators-section");
+
+            const list =
+                $("spectators-list");
+
+
+            if (!spectatorIds.length) {
+
+                section
+                    .classList
+                    .add("hidden");
+
                 return;
             }
 
-            const winShare = Math.round((totalLossPool / winners.length) * 100) / 100;
-            winners.forEach(wName => {
-                currentRoundScores[wName] = winShare;
-            });
 
-            let resetPlayers = { ...roomData.players };
-            Object.keys(resetPlayers).forEach(pName => {
-                resetPlayers[pName].isWin = false;
-                resetPlayers[pName].inputVal = '';
-            });
+            section
+                .classList
+                .remove("hidden");
 
-            const updatedRounds = [...(roomData.rounds || []), { scores: currentRoundScores }];
 
-            window.dbUpdate(window.dbRef(window.db, `rooms/${roomId}`), {
-                players: resetPlayers,
-                rounds: updatedRounds,
-                warningMsg: ''
-            });
+            $("spectator-count").innerText =
+                spectatorIds.length;
+
+
+            list.innerHTML =
+                spectatorIds
+                    .map(id => {
+
+                        const name =
+                            spectators[id]?.name ||
+                            "Khán giả";
+
+                        return `
+                            <span
+                                class="
+                                    bg-purple-500/20
+                                    border
+                                    border-purple-400/30
+                                    text-purple-200
+                                    px-2.5
+                                    py-1
+                                    rounded-xl
+                                "
+                            >
+                                👁️
+                                ${escapeHTML(name)}
+                                ${
+                                    id === myPlayerId
+                                        ? "(Tôi)"
+                                        : ""
+                                }
+                            </span>
+                        `;
+
+                    })
+                    .join("");
         }
 
-        function closeRoom() {
-            if (confirm("Xác nhận ĐÓNG & CHỐT PHÒNG? Sau khi đóng, dữ liệu bảng điểm sẽ lưu cố định và tự động xóa vĩnh viễn sau 72h.")) {
-                window.dbUpdate(window.dbRef(window.db, `rooms/${roomId}`), {
-                    isClosed: true,
-                    closedAt: Date.now()
-                });
-            }
-        }
+
+        /* ========================================================
+           CALCULATE SCORES
+        ======================================================== */
 
         function calculateTotalScores() {
-            let totals = {};
-            Object.keys(roomData.players || {}).forEach(name => totals[name] = 0);
 
-            (roomData.rounds || []).forEach(r => {
-                Object.entries(r.scores || {}).forEach(([name, sc]) => {
-                    totals[name] = Math.round(((totals[name] || 0) + sc) * 100) / 100;
-                });
-            });
+            const totals = {};
+
+
+            Object.keys(
+                roomData.players || {}
+            ).forEach(
+                playerId => {
+                    totals[playerId] = 0;
+                }
+            );
+
+
+            for (
+                const round of roomData.rounds || []
+            ) {
+
+                for (
+                    const [playerId, score]
+                    of Object.entries(
+                        round?.scores || {}
+                    )
+                ) {
+
+                    const value =
+                        Number(score) || 0;
+
+
+                    totals[playerId] =
+                        Math.round(
+                            (
+                                (totals[playerId] || 0) +
+                                value
+                            ) * 100
+                        ) / 100;
+                }
+            }
+
+
             return totals;
         }
 
-        function openEditModal(roundIdx) {
-            editingRoundIndex = roundIdx;
-            const round = roomData.rounds[roundIdx];
-            document.getElementById('modal-title').innerText = `Sửa Điểm Ván ${roundIdx + 1}`;
-            
-            const container = document.getElementById('modal-inputs');
-            container.innerHTML = '';
 
-            Object.entries(round.scores).forEach(([pName, sc]) => {
-                container.innerHTML += `
-                    <div class="flex justify-between items-center gap-2">
-                        <span class="font-bold text-xs text-sky-200 w-1/3">${pName}:</span>
-                        <input type="number" id="edit-score-${pName}" value="${sc}" 
-                            class="flex-1 glass-input p-2 rounded-xl text-xs outline-none">
+        /* ========================================================
+           RENDER LEADERBOARD
+        ======================================================== */
+
+        function renderLeaderboard(
+            playerIds,
+            players
+        ) {
+
+            const scores =
+                calculateTotalScores();
+
+
+            const sorted =
+                playerIds
+                    .map(id => ({
+                        id: id,
+                        name:
+                            players[id]?.name ||
+                            "Người chơi",
+                        score:
+                            scores[id] || 0
+                    }))
+                    .sort(
+                        (a, b) =>
+                            b.score - a.score
+                    );
+
+
+            const lb =
+                $("leaderboard");
+
+
+            if (!sorted.length) {
+
+                lb.innerHTML = `
+                    <div
+                        class="
+                            text-center
+                            py-6
+                            text-xs
+                            text-sky-300/50
+                        "
+                    >
+                        Chưa có người chơi.
                     </div>
                 `;
-            });
 
-            document.getElementById('edit-modal').classList.remove('hidden');
+                return;
+            }
+
+
+            lb.innerHTML =
+                sorted
+                    .map((player, index) => {
+
+                        const isPos =
+                            player.score >= 0;
+
+                        let rankIcon = "";
+
+                        if (index === 0) {
+
+                            rankIcon =
+                                `
+                                <i
+                                    class="
+                                        fa-solid
+                                        fa-crown
+                                        text-amber-400
+                                    "
+                                ></i>
+                                `;
+
+                        } else if (index === 1) {
+
+                            rankIcon =
+                                `
+                                <i
+                                    class="
+                                        fa-solid
+                                        fa-medal
+                                        text-slate-300
+                                    "
+                                ></i>
+                                `;
+
+                        } else if (index === 2) {
+
+                            rankIcon =
+                                `
+                                <i
+                                    class="
+                                        fa-solid
+                                        fa-award
+                                        text-amber-600
+                                    "
+                                ></i>
+                                `;
+
+                        } else {
+
+                            rankIcon =
+                                `
+                                <span
+                                    class="
+                                        text-xs
+                                        font-bold
+                                        text-sky-400
+                                    "
+                                >
+                                    ${index + 1}
+                                </span>
+                                `;
+                        }
+
+
+                        const isMe =
+                            player.id === myPlayerId;
+
+
+                        return `
+                            <div
+                                class="
+                                    flex
+                                    justify-between
+                                    items-center
+                                    p-3
+                                    rounded-2xl
+                                    glass-input
+                                    transition
+                                    ${
+                                        index === 0
+                                            ? "winner-row"
+                                            : ""
+                                    }
+                                "
+                            >
+
+                                <div
+                                    class="
+                                        flex
+                                        items-center
+                                        gap-3
+                                        min-w-0
+                                    "
+                                >
+
+                                    <div
+                                        class="
+                                            w-7
+                                            text-center
+                                            shrink-0
+                                        "
+                                    >
+                                        ${rankIcon}
+                                    </div>
+
+                                    <div class="min-w-0">
+
+                                        <p
+                                            class="
+                                                font-bold
+                                                text-sm
+                                                truncate
+                                                ${
+                                                    isMe
+                                                        ? "text-sky-300"
+                                                        : "text-slate-100"
+                                                }
+                                            "
+                                        >
+                                            ${escapeHTML(player.name)}
+
+                                            ${
+                                                player.id ===
+                                                roomData.hostId
+                                                    ? " 👑"
+                                                    : ""
+                                            }
+
+                                            ${
+                                                isMe
+                                                    ? " (Tôi)"
+                                                    : ""
+                                            }
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+
+                                <span
+                                    class="
+                                        font-extrabold
+                                        text-base
+                                        shrink-0
+                                        ml-2
+                                        ${
+                                            isPos
+                                                ? "text-emerald-400 glow-score-pos"
+                                                : "text-rose-400 glow-score-neg"
+                                        }
+                                    "
+                                >
+                                    ${formatScore(player.score)}
+                                </span>
+
+                            </div>
+                        `;
+
+                    })
+                    .join("");
         }
+
+
+        /* ========================================================
+           RENDER INPUT LIST
+        ======================================================== */
+
+        function renderInputList(
+            playerIds,
+            players
+        ) {
+
+            const container =
+                $("players-input-list");
+
+
+            container.innerHTML =
+                playerIds
+                    .map(id => {
+
+                        const player =
+                            players[id] || {};
+
+                        const isMe =
+                            id === myPlayerId;
+
+                        const isWin =
+                            Boolean(player.isWin);
+
+                        const inputVal =
+                            player.inputVal ?? "";
+
+
+                        return `
+                            <div
+                                class="
+                                    p-3.5
+                                    rounded-2xl
+                                    ${
+                                        isMe
+                                            ? "bg-sky-500/10 border-sky-400/40"
+                                            : "glass-input"
+                                    }
+                                    border
+                                    space-y-2
+                                "
+                            >
+
+                                <div
+                                    class="
+                                        flex
+                                        justify-between
+                                        items-center
+                                        gap-2
+                                    "
+                                >
+
+                                    <span
+                                        class="
+                                            font-bold
+                                            text-xs
+                                            ${
+                                                isMe
+                                                    ? "text-sky-300"
+                                                    : "text-slate-200"
+                                            }
+                                            truncate
+                                        "
+                                    >
+                                        ${escapeHTML(
+                                            player.name ||
+                                            "Người chơi"
+                                        )}
+
+                                        ${
+                                            isMe
+                                                ? "(Tôi)"
+                                                : ""
+                                        }
+                                    </span>
+
+
+                                    <label
+                                        class="
+                                            flex
+                                            items-center
+                                            gap-1.5
+                                            cursor-pointer
+                                            shrink-0
+                                        "
+                                    >
+
+                                        <input
+                                            type="checkbox"
+                                            ${
+                                                isWin
+                                                    ? "checked"
+                                                    : ""
+                                            }
+                                            onchange="
+                                                updateInput(
+                                                    '${escapeJS(id)}',
+                                                    'isWin',
+                                                    this.checked
+                                                )
+                                            "
+                                            class="
+                                                w-4
+                                                h-4
+                                                accent-emerald-500
+                                                rounded
+                                            "
+                                        >
+
+                                        <span
+                                            class="
+                                                text-xs
+                                                font-bold
+                                                text-emerald-400
+                                            "
+                                        >
+                                            Thắng
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+
+                                <div
+                                    class="${
+                                        isWin
+                                            ? "hidden"
+                                            : ""
+                                    }"
+                                >
+
+                                    <input
+                                        type="text"
+                                        inputmode="decimal"
+                                        value="${escapeHTML(
+                                            inputVal
+                                        )}"
+                                        placeholder="Số điểm thua, VD: -50"
+                                        onchange="
+                                            updateInput(
+                                                '${escapeJS(id)}',
+                                                'inputVal',
+                                                this.value.trim()
+                                            )
+                                        "
+                                        class="
+                                            w-full
+                                            glass-input
+                                            px-3
+                                            py-2
+                                            rounded-xl
+                                            text-xs
+                                            outline-none
+                                        "
+                                    >
+
+                                </div>
+
+                            </div>
+                        `;
+
+                    })
+                    .join("");
+        }
+
+
+        /* ========================================================
+           ESCAPE JS STRING
+        ======================================================== */
+
+        function escapeJS(value) {
+
+            return String(value || "")
+                .replace(/\\/g, "\\\\")
+                .replace(/'/g, "\\'")
+                .replace(/"/g, '\\"')
+                .replace(/\n/g, "\\n")
+                .replace(/\r/g, "\\r");
+        }
+
+
+        /* ========================================================
+           UPDATE INPUT
+        ======================================================== */
+
+        async function updateInput(
+            playerId,
+            field,
+            value
+        ) {
+
+            if (
+                !isPlayer ||
+                roomData.isClosed
+            ) {
+                return;
+            }
+
+
+            if (
+                !roomData.players[playerId]
+            ) {
+                return;
+            }
+
+
+            /*
+             * Validate.
+             */
+
+            if (field === "inputVal") {
+
+                const raw =
+                    String(value || "")
+                        .trim();
+
+
+                if (raw !== "") {
+
+                    const parsed =
+                        parseScore(raw);
+
+
+                    if (
+                        parsed === null
+                    ) {
+
+                        showToast(
+                            "Điểm không hợp lệ."
+                        );
+
+                        renderUI();
+
+                        return;
+                    }
+
+
+                    /*
+                     * Điểm thua phải <= 0.
+                     */
+
+                    if (parsed > 0) {
+
+                        showToast(
+                            "Điểm thua phải là số âm."
+                        );
+
+                        renderUI();
+
+                        return;
+                    }
+                }
+
+                value = raw;
+            }
+
+
+            const updates = {};
+
+
+            updates[
+                `${ROOM_PREFIX}/${roomId}/players/${playerId}/${field}`
+            ] = value;
+
+
+            if (
+                field === "isWin" &&
+                value === true
+            ) {
+
+                updates[
+                    `${ROOM_PREFIX}/${roomId}/players/${playerId}/inputVal`
+                ] = "";
+            }
+
+
+            try {
+
+                await window.FirebaseAPI.update(
+                    window.FirebaseAPI.ref(
+                        window.FirebaseAPI.db
+                    ),
+                    updates
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "UPDATE INPUT:",
+                    error
+                );
+
+                showAlert(
+                    "Không thể cập nhật điểm."
+                );
+
+            }
+
+        }
+
+
+        /* ========================================================
+           SUBMIT ROUND
+        ======================================================== */
+
+        async function submitRound() {
+
+            if (
+                !isPlayer ||
+                roomData.isClosed
+            ) {
+                return;
+            }
+
+
+            const players =
+                roomData.players || {};
+
+
+            const playerIds =
+                Object.keys(players);
+
+
+            if (
+                playerIds.length === 0
+            ) {
+
+                showAlert(
+                    "Chưa có người chơi."
+                );
+
+                return;
+            }
+
+
+            const missingPlayers = [];
+
+            const winners = [];
+
+            const currentRoundScores = {};
+
+            let totalLossPool = 0;
+
+
+            /*
+             * Validate.
+             */
+
+            for (
+                const playerId
+                of playerIds
+            ) {
+
+                const player =
+                    players[playerId];
+
+
+                const name =
+                    player.name ||
+                    "Người chơi";
+
+
+                if (player.isWin) {
+
+                    winners.push(
+                        playerId
+                    );
+
+                    continue;
+                }
+
+
+                const parsed =
+                    parseScore(
+                        player.inputVal
+                    );
+
+
+                if (
+                    parsed === null
+                ) {
+
+                    missingPlayers.push(
+                        name
+                    );
+
+                    continue;
+                }
+
+
+                if (
+                    parsed >= 0
+                ) {
+
+                    showAlert(
+                        `${name}: điểm thua phải là số âm.`
+                    );
+
+                    return;
+                }
+
+
+                currentRoundScores[
+                    playerId
+                ] = parsed;
+
+
+                totalLossPool +=
+                    Math.abs(parsed);
+            }
+
+
+            /*
+             * Missing.
+             */
+
+            if (
+                missingPlayers.length > 0
+            ) {
+
+                const message =
+                    `Còn người chưa nhập điểm: ${missingPlayers.join(", ")}`;
+
+
+                await window.FirebaseAPI.update(
+                    getRoomRef(),
+                    {
+                        warningMsg:
+                            message
+                    }
+                );
+
+
+                return;
+            }
+
+
+            /*
+             * Phải có winner.
+             */
+
+            if (
+                winners.length === 0
+            ) {
+
+                showAlert(
+                    "Phải có ít nhất 1 người chọn THẮNG!"
+                );
+
+                return;
+            }
+
+
+            /*
+             * Phải có điểm thua.
+             */
+
+            if (
+                totalLossPool <= 0
+            ) {
+
+                showAlert(
+                    "Ván này cần ít nhất một người có điểm thua âm."
+                );
+
+                return;
+            }
+
+
+            /*
+             * Chia điểm thắng.
+             */
+
+            const winShare =
+                Math.round(
+                    (
+                        totalLossPool /
+                        winners.length
+                    ) * 100
+                ) / 100;
+
+
+            winners.forEach(
+                playerId => {
+
+                    currentRoundScores[
+                        playerId
+                    ] = winShare;
+
+                }
+            );
+
+
+            /*
+             * Kiểm tra tổng điểm.
+             *
+             * Do làm tròn 2 chữ số,
+             * có thể xuất hiện chênh lệch 0.01.
+             */
+
+            let total =
+                Object.values(
+                    currentRoundScores
+                )
+                .reduce(
+                    (sum, score) =>
+                        sum + Number(score),
+                    0
+                );
+
+
+            total =
+                Math.round(
+                    total * 100
+                ) / 100;
+
+
+            /*
+             * Điều chỉnh sai số làm tròn
+             * vào winner cuối cùng.
+             */
+
+            if (
+                total !== 0
+            ) {
+
+                const correction =
+                    Math.round(
+                        -total * 100
+                    ) / 100;
+
+
+                const lastWinner =
+                    winners[
+                        winners.length - 1
+                    ];
+
+
+                currentRoundScores[
+                    lastWinner
+                ] =
+                    Math.round(
+                        (
+                            currentRoundScores[
+                                lastWinner
+                            ] +
+                            correction
+                        ) * 100
+                    ) / 100;
+            }
+
+
+            /*
+             * Add round.
+             */
+
+            const rounds =
+                [
+                    ...(roomData.rounds || []),
+                    {
+                        scores:
+                            currentRoundScores,
+
+                        createdAt:
+                            Date.now(),
+
+                        createdBy:
+                            myPlayerId
+                    }
+                ];
+
+
+            /*
+             * Reset players.
+             */
+
+            const resetPlayers = {};
+
+
+            playerIds.forEach(
+                playerId => {
+
+                    const original =
+                        players[playerId];
+
+
+                    resetPlayers[
+                        playerId
+                    ] = {
+
+                        ...original,
+
+                        isWin: false,
+
+                        inputVal: ""
+                    };
+
+                }
+            );
+
+
+            /*
+             * Ghi atomically.
+             */
+
+            try {
+
+                await window.FirebaseAPI.update(
+                    getRoomRef(),
+                    {
+                        players:
+                            resetPlayers,
+
+                        rounds:
+                            rounds,
+
+                        warningMsg:
+                            ""
+                    }
+                );
+
+
+                showToast(
+                    `Đã chốt Ván ${rounds.length}`
+                );
+
+
+                /*
+                 * Celebration.
+                 */
+
+                setTimeout(
+                    () => {
+
+                        confetti({
+                            particleCount: 35,
+                            spread: 60,
+                            origin: {
+                                y: 0.75
+                            }
+                        });
+
+                    },
+                    50
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "SUBMIT ROUND:",
+                    error
+                );
+
+                showAlert(
+                    "Không thể chốt ván. Có thể Firebase Rules đã từ chối thao tác."
+                );
+            }
+
+        }
+
+
+        /* ========================================================
+           RENDER HISTORY
+        ======================================================== */
+
+        function renderHistory() {
+
+            const container =
+                $("history-list");
+
+
+            const rounds =
+                roomData.rounds || [];
+
+
+            if (!rounds.length) {
+
+                container.innerHTML = `
+                    <div
+                        class="
+                            text-center
+                            py-6
+                            text-xs
+                            text-sky-300/50
+                        "
+                    >
+                        Chưa có ván nào được chốt.
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            const isHost =
+                roomData.hostId === myPlayerId;
+
+
+            container.innerHTML =
+                rounds
+                    .map(
+                        (round, index) => {
+
+                            const details =
+                                Object.entries(
+                                    round.scores || {}
+                                )
+                                .map(
+                                    (
+                                        [playerId, score]
+                                    ) => {
+
+                                        const player =
+                                            roomData
+                                                .players[
+                                                    playerId
+                                                ];
+
+
+                                        /*
+                                         * Nếu player đã rời ghế,
+                                         * cố gắng lấy tên snapshot
+                                         * nếu có.
+                                         */
+
+                                        const name =
+                                            player?.name ||
+                                            round
+                                                .playerNames?.[
+                                                    playerId
+                                                ] ||
+                                            "Người chơi";
+
+
+                                        const numericScore =
+                                            Number(
+                                                score
+                                            ) || 0;
+
+
+                                        return `
+                                            <span>
+                                                ${escapeHTML(name)}:
+                                                <b
+                                                    class="${
+                                                        numericScore >= 0
+                                                            ? "text-emerald-400"
+                                                            : "text-rose-400"
+                                                    }"
+                                                >
+                                                    ${formatScore(
+                                                        numericScore
+                                                    )}
+                                                </b>
+                                            </span>
+                                        `;
+                                    }
+                                )
+                                .join(
+                                    `
+                                    <span
+                                        class="
+                                            text-sky-400/30
+                                            mx-1
+                                        "
+                                    >
+                                        |
+                                    </span>
+                                    `
+                                );
+
+
+                            const canEdit =
+                                isHost &&
+                                !roomData.isClosed;
+
+
+                            return `
+                                <div
+                                    class="
+                                        p-3
+                                        rounded-2xl
+                                        glass-input
+                                        flex
+                                        justify-between
+                                        items-center
+                                        gap-2
+                                    "
+                                >
+
+                                    <div
+                                        class="
+                                            flex-1
+                                            leading-relaxed
+                                        "
+                                    >
+
+                                        <div
+                                            class="
+                                                text-[10px]
+                                                text-sky-300/50
+                                                mb-1
+                                            "
+                                        >
+                                            ${
+                                                round.createdAt
+                                                    ? formatDate(
+                                                        round.createdAt
+                                                    )
+                                                    : ""
+                                            }
+                                        </div>
+
+                                        <div>
+                                            <span
+                                                class="
+                                                    font-bold
+                                                    text-sky-400
+                                                "
+                                            >
+                                                Ván ${index + 1}:
+                                            </span>
+
+                                            ${details}
+                                        </div>
+
+                                    </div>
+
+
+                                    ${
+                                        canEdit
+                                            ? `
+                                                <button
+                                                    onclick="
+                                                        openEditModal(
+                                                            ${index}
+                                                        )
+                                                    "
+                                                    class="
+                                                        bg-amber-500/20
+                                                        hover:bg-amber-500/30
+                                                        text-amber-300
+                                                        border
+                                                        border-amber-400/30
+                                                        px-2.5
+                                                        py-1
+                                                        rounded-xl
+                                                        text-[10px]
+                                                        font-bold
+                                                        shrink-0
+                                                    "
+                                                >
+                                                    <i
+                                                        class="
+                                                            fa-solid
+                                                            fa-pen
+                                                        "
+                                                    ></i>
+                                                    Sửa
+                                                </button>
+                                            `
+                                            : ""
+                                    }
+
+                                </div>
+                            `;
+                        }
+                    )
+                    .reverse()
+                    .join("");
+        }
+
+
+        /* ========================================================
+           FORMAT DATE
+        ======================================================== */
+
+        function formatDate(timestamp) {
+
+            const date =
+                new Date(
+                    Number(timestamp)
+                );
+
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+                return "";
+            }
+
+
+            return date.toLocaleString(
+                "vi-VN",
+                {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+        }
+
+
+        /* ========================================================
+           EDIT ROUND
+        ======================================================== */
+
+        function openEditModal(
+            roundIdx
+        ) {
+
+            /*
+             * QUAN TRỌNG:
+             * kiểm tra host thật.
+             */
+
+            if (
+                roomData.hostId !==
+                myPlayerId
+            ) {
+
+                showAlert(
+                    "Chỉ Chủ Phòng mới được sửa điểm."
+                );
+
+                return;
+            }
+
+
+            if (
+                roomData.isClosed
+            ) {
+
+                showAlert(
+                    "Phòng đã khóa, không thể sửa."
+                );
+
+                return;
+            }
+
+
+            const round =
+                roomData.rounds[
+                    roundIdx
+                ];
+
+
+            if (!round) {
+                return;
+            }
+
+
+            editingRoundIndex =
+                roundIdx;
+
+
+            $("modal-title").innerText =
+                `Sửa Điểm Ván ${roundIdx + 1}`;
+
+
+            const container =
+                $("modal-inputs");
+
+
+            container.innerHTML =
+                Object.entries(
+                    round.scores || {}
+                )
+                .map(
+                    (
+                        [playerId, score]
+                    ) => {
+
+                        const player =
+                            roomData
+                                .players[
+                                    playerId
+                                ];
+
+
+                        const name =
+                            player?.name ||
+                            "Người chơi";
+
+
+                        return `
+                            <div
+                                class="
+                                    flex
+                                    justify-between
+                                    items-center
+                                    gap-2
+                                "
+                            >
+
+                                <span
+                                    class="
+                                        font-bold
+                                        text-xs
+                                        text-sky-200
+                                        w-1/3
+                                        truncate
+                                    "
+                                >
+                                    ${escapeHTML(name)}
+                                </span>
+
+
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    id="edit-score-${escapeHTML(
+                                        playerId
+                                    )}"
+                                    value="${escapeHTML(
+                                        score
+                                    )}"
+                                    class="
+                                        flex-1
+                                        glass-input
+                                        p-2
+                                        rounded-xl
+                                        text-xs
+                                        outline-none
+                                    "
+                                >
+
+                            </div>
+                        `;
+
+                    }
+                )
+                .join("");
+
+
+            $("edit-modal")
+                .classList
+                .remove("hidden");
+        }
+
+
+        /* ========================================================
+           CLOSE EDIT MODAL
+        ======================================================== */
 
         function closeEditModal() {
-            document.getElementById('edit-modal').classList.add('hidden');
+
+            editingRoundIndex = -1;
+
+            $("edit-modal")
+                .classList
+                .add("hidden");
         }
 
-        function saveEditedRound() {
-            if (editingRoundIndex < 0) return;
 
-            let updatedScores = {};
-            const round = roomData.rounds[editingRoundIndex];
+        /* ========================================================
+           SAVE EDITED ROUND
+        ======================================================== */
 
-            Object.keys(round.scores).forEach(pName => {
-                const val = parseFloat(document.getElementById(`edit-score-${pName}`).value) || 0;
-                updatedScores[pName] = val;
-            });
+        async function saveEditedRound() {
 
-            let newRounds = [...roomData.rounds];
-            newRounds[editingRoundIndex].scores = updatedScores;
+            /*
+             * Host check.
+             */
 
-            window.dbUpdate(window.dbRef(window.db, `rooms/${roomId}`), {
-                rounds: newRounds
-            });
+            if (
+                roomData.hostId !==
+                myPlayerId
+            ) {
 
-            closeEditModal();
+                showAlert(
+                    "Chỉ Chủ Phòng mới được sửa điểm."
+                );
+
+                return;
+            }
+
+
+            if (
+                roomData.isClosed
+            ) {
+
+                showAlert(
+                    "Phòng đã khóa."
+                );
+
+                return;
+            }
+
+
+            if (
+                editingRoundIndex < 0
+            ) {
+                return;
+            }
+
+
+            const round =
+                roomData.rounds[
+                    editingRoundIndex
+                ];
+
+
+            if (!round) {
+                return;
+            }
+
+
+            const updatedScores = {};
+
+
+            for (
+                const playerId
+                of Object.keys(
+                    round.scores || {}
+                )
+            ) {
+
+                const input =
+                    document.getElementById(
+                        `edit-score-${playerId}`
+                    );
+
+
+                if (!input) {
+                    continue;
+                }
+
+
+                const value =
+                    parseScore(
+                        input.value
+                    );
+
+
+                if (
+                    value === null
+                ) {
+
+                    showAlert(
+                        "Có điểm không hợp lệ."
+                    );
+
+                    return;
+                }
+
+
+                updatedScores[
+                    playerId
+                ] = value;
+            }
+
+
+            /*
+             * Kiểm tra tổng điểm.
+             */
+
+            const total =
+                Math.round(
+                    Object.values(
+                        updatedScores
+                    )
+                    .reduce(
+                        (sum, score) =>
+                            sum + Number(score),
+                        0
+                    ) * 100
+                ) / 100;
+
+
+            if (
+                total !== 0
+            ) {
+
+                showAlert(
+                    `Tổng điểm Ván ${editingRoundIndex + 1} phải bằng 0. Hiện tại: ${total}`
+                );
+
+                return;
+            }
+
+
+            const newRounds =
+                roomData.rounds.map(
+                    (r, index) => {
+
+                        if (
+                            index !==
+                            editingRoundIndex
+                        ) {
+                            return r;
+                        }
+
+
+                        return {
+                            ...r,
+
+                            scores:
+                                updatedScores,
+
+                            editedAt:
+                                Date.now(),
+
+                            editedBy:
+                                myPlayerId
+                        };
+                    }
+                );
+
+
+            try {
+
+                await window.FirebaseAPI.update(
+                    getRoomRef(),
+                    {
+                        rounds:
+                            newRounds
+                    }
+                );
+
+
+                closeEditModal();
+
+                showToast(
+                    "Đã lưu thay đổi."
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "EDIT ROUND:",
+                    error
+                );
+
+                showAlert(
+                    "Không thể lưu thay đổi."
+                );
+            }
+
         }
+
+
+        /* ========================================================
+           CLOSE ROOM
+        ======================================================== */
+
+        async function closeRoom() {
+
+            /*
+             * Host check.
+             */
+
+            if (
+                roomData.hostId !==
+                myPlayerId
+            ) {
+
+                showAlert(
+                    "Chỉ Chủ Phòng mới có thể khóa phòng."
+                );
+
+                return;
+            }
+
+
+            if (
+                roomData.isClosed
+            ) {
+
+                return;
+            }
+
+
+            const confirmed =
+                confirm(
+                    "Xác nhận ĐÓNG & CHỐT PHÒNG?\n\n" +
+                    "Sau khi đóng:\n" +
+                    "• Không thể nhập điểm mới.\n" +
+                    "• Không thể sửa điểm.\n" +
+                    "• Bảng điểm được lưu cố định.\n" +
+                    "• Dữ liệu sẽ được xử lý hết hạn sau 72 giờ."
+                );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            try {
+
+                await window.FirebaseAPI.update(
+                    getRoomRef(),
+                    {
+                        isClosed:
+                            true,
+
+                        closedAt:
+                            Date.now()
+                    }
+                );
+
+
+                showToast(
+                    "Phòng đã được khóa."
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "CLOSE ROOM:",
+                    error
+                );
+
+                showAlert(
+                    "Không thể khóa phòng."
+                );
+            }
+
+        }
+
+
+        /* ========================================================
+           SWAP MODAL
+        ======================================================== */
+
+        function openSwapModal() {
+
+            if (
+                !isPlayer ||
+                roomData.isClosed
+            ) {
+                return;
+            }
+
+
+            const spectators =
+                roomData.spectators || {};
+
+
+            const ids =
+                Object.keys(
+                    spectators
+                );
+
+
+            if (!ids.length) {
+
+                showAlert(
+                    "Hiện tại không có khán giả nào."
+                );
+
+                return;
+            }
+
+
+            const container =
+                $("swap-spectators-list");
+
+
+            container.innerHTML =
+                ids.map(
+                    id => {
+
+                        const name =
+                            spectators[id]?.name ||
+                            "Khán giả";
+
+
+                        return `
+                            <button
+                                onclick="
+                                    confirmSwapWith(
+                                        '${escapeJS(id)}'
+                                    )
+                                "
+                                class="
+                                    w-full
+                                    glass-input
+                                    hover:bg-purple-500/20
+                                    text-purple-200
+                                    p-3
+                                    rounded-2xl
+                                    font-bold
+                                    text-xs
+                                    flex
+                                    justify-between
+                                    items-center
+                                    transition
+                                "
+                            >
+
+                                <span>
+                                    👁️
+                                    ${escapeHTML(name)}
+                                </span>
+
+                                <span
+                                    class="
+                                        text-[10px]
+                                        bg-purple-500/40
+                                        px-2
+                                        py-1
+                                        rounded-lg
+                                    "
+                                >
+                                    Chọn Thay
+                                </span>
+
+                            </button>
+                        `;
+
+                    }
+                )
+                .join("");
+
+
+            $("swap-modal")
+                .classList
+                .remove("hidden");
+        }
+
+
+        /* ========================================================
+           CLOSE SWAP MODAL
+        ======================================================== */
+
+        function closeSwapModal() {
+
+            $("swap-modal")
+                .classList
+                .add("hidden");
+        }
+
+
+        /* ========================================================
+           CONFIRM SWAP
+        ======================================================== */
+
+        async function confirmSwapWith(
+            targetSpectatorId
+        ) {
+
+            if (
+                !isPlayer ||
+                roomData.isClosed
+            ) {
+                return;
+            }
+
+
+            const target =
+                roomData
+                    .spectators[
+                        targetSpectatorId
+                    ];
+
+
+            if (!target) {
+
+                showAlert(
+                    "Khán giả này không còn trong phòng."
+                );
+
+                closeSwapModal();
+
+                return;
+            }
+
+
+            const targetName =
+                target.name ||
+                "Khán giả";
+
+
+            const confirmed =
+                confirm(
+                    `Bạn chắc chắn muốn nhường vị trí cho ${targetName}?\n\nBạn sẽ trở thành Khán Giả.`
+                );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            /*
+             * Dùng transaction để đảm bảo
+             * hai bên được swap trong một lần ghi.
+             */
+
+            const roomRef =
+                getRoomRef();
+
+
+            try {
+
+                await window.FirebaseAPI.runTransaction(
+                    roomRef,
+                    current => {
+
+                        if (!current) {
+                            return;
+                        }
+
+
+                        if (
+                            current.isClosed
+                        ) {
+                            return;
+                        }
+
+
+                        if (
+                            !current.players ||
+                            !current.players[
+                                myPlayerId
+                            ]
+                        ) {
+                            return;
+                        }
+
+
+                        if (
+                            !current.spectators ||
+                            !current.spectators[
+                                targetSpectatorId
+                            ]
+                        ) {
+                            return;
+                        }
+
+
+                        const myPlayer =
+                            current.players[
+                                myPlayerId
+                            ];
+
+
+                        const targetSpectator =
+                            current.spectators[
+                                targetSpectatorId
+                            ];
+
+
+                        /*
+                         * Player -> Spectator
+                         */
+
+                        current.spectators[
+                            myPlayerId
+                        ] = {
+                            name:
+                                myPlayer.name,
+                            joinedAt:
+                                Date.now()
+                        };
+
+
+                        /*
+                         * Spectator -> Player
+                         */
+
+                        current.players[
+                            targetSpectatorId
+                        ] = {
+                            name:
+                                targetSpectator.name,
+                            isWin: false,
+                            inputVal: "",
+                            joinedAt:
+                                Date.now()
+                        };
+
+
+                        delete current.players[
+                            myPlayerId
+                        ];
+
+
+                        delete current.spectators[
+                            targetSpectatorId
+                        ];
+
+
+                        /*
+                         * Nếu người nhường ghế là host,
+                         * chuyển host cho người mới.
+                         */
+
+                        if (
+                            current.hostId ===
+                            myPlayerId
+                        ) {
+
+                            current.hostId =
+                                targetSpectatorId;
+                        }
+
+
+                        return current;
+
+                    }
+                );
+
+
+                closeSwapModal();
+
+
+                showToast(
+                    "Đã nhường ghế thành công."
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "SWAP:",
+                    error
+                );
+
+                showAlert(
+                    "Không thể nhường ghế."
+                );
+            }
+
+        }
+
+
+        /* ========================================================
+           QR
+        ======================================================== */
+
+        function generateQRCode() {
+
+            if (qrGenerated) {
+                return;
+            }
+
+
+            const container =
+                $("qrcode");
+
+
+            container.innerHTML = "";
+
+
+            const roomUrl =
+                `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(roomId)}`;
+
+
+            if (
+                typeof QRCode ===
+                "undefined"
+            ) {
+
+                console.warn(
+                    "QRCode library chưa tải."
+                );
+
+                return;
+            }
+
+
+            new QRCode(
+                container,
+                {
+                    text:
+                        roomUrl,
+
+                    width:
+                        140,
+
+                    height:
+                        140,
+
+                    correctLevel:
+                        QRCode.CorrectLevel.M
+                }
+            );
+
+
+            qrGenerated = true;
+        }
+
+
+        /* ========================================================
+           TOGGLE QR
+        ======================================================== */
 
         function toggleQR() {
-            document.getElementById('qr-container').classList.toggle('hidden');
-            document.getElementById('qr-container').classList.toggle('flex');
+
+            const container =
+                $("qr-container");
+
+
+            if (
+                !qrGenerated
+            ) {
+                generateQRCode();
+            }
+
+
+            container
+                .classList
+                .toggle("hidden");
+
+            container
+                .classList
+                .toggle("flex");
+
         }
 
-        function copyLink() {
-            const roomUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-            navigator.clipboard.writeText(roomUrl);
-            alert("Đã sao chép liên kết phòng!");
+
+        /* ========================================================
+           COPY LINK
+        ======================================================== */
+
+        async function copyLink() {
+
+            const roomUrl =
+                `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(roomId)}`;
+
+
+            try {
+
+                await navigator.clipboard.writeText(
+                    roomUrl
+                );
+
+
+                showToast(
+                    "Đã sao chép đường dẫn phòng!"
+                );
+
+
+            } catch (error) {
+
+                /*
+                 * Fallback.
+                 */
+
+                const textarea =
+                    document.createElement(
+                        "textarea"
+                    );
+
+
+                textarea.value =
+                    roomUrl;
+
+
+                textarea.style.position =
+                    "fixed";
+
+                textarea.style.opacity =
+                    "0";
+
+
+                document.body.appendChild(
+                    textarea
+                );
+
+
+                textarea.select();
+
+
+                try {
+
+                    document.execCommand(
+                        "copy"
+                    );
+
+                    showToast(
+                        "Đã sao chép đường dẫn!"
+                    );
+
+                } catch {
+
+                    showAlert(
+                        `Đường dẫn phòng:\n${roomUrl}`
+                    );
+                }
+
+
+                textarea.remove();
+            }
+
         }
+
+
+        /* ========================================================
+           REACTIONS
+        ======================================================== */
+
+        function subscribeToReactions() {
+
+            if (reactionsUnsubscribe) {
+                reactionsUnsubscribe();
+            }
+
+
+            const reactionRef =
+                getReactionRef();
+
+
+            reactionsUnsubscribe =
+                window.FirebaseAPI.onChildAdded(
+                    reactionRef,
+                    snapshot => {
+
+                        const data =
+                            snapshot.val();
+
+
+                        if (!data) {
+                            return;
+                        }
+
+
+                        const timestamp =
+                            Number(
+                                data.timestamp ||
+                                0
+                            );
+
+
+                        /*
+                         * Chỉ hiển thị reaction
+                         * vừa xảy ra.
+                         */
+
+                        if (
+                            Date.now() -
+                            timestamp
+                            <= 4000
+                        ) {
+
+                            triggerReactionEffect(
+                                data.type,
+                                data.sender,
+                                data.target
+                            );
+                        }
+
+                    },
+                    error => {
+
+                        console.warn(
+                            "REACTION LISTENER:",
+                            error
+                        );
+                    }
+                );
+
+        }
+
+
+        /* ========================================================
+           SEND REACTION
+        ======================================================== */
+
+        async function sendReaction(
+            type
+        ) {
+
+            if (
+                !roomId ||
+                !myName
+            ) {
+                return;
+            }
+
+
+            const scores =
+                calculateTotalScores();
+
+
+            let topPlayerId =
+                "";
+
+            let maxScore =
+                -Infinity;
+
+
+            Object.entries(
+                scores
+            )
+            .forEach(
+                (
+                    [playerId, score]
+                ) => {
+
+                    if (
+                        score >
+                        maxScore
+                    ) {
+
+                        maxScore =
+                            score;
+
+                        topPlayerId =
+                            playerId;
+                    }
+
+                }
+            );
+
+
+            const target =
+                roomData
+                    .players[
+                        topPlayerId
+                    ]?.name ||
+                "người đang dẫn đầu";
+
+
+            try {
+
+                const newRef =
+                    window.FirebaseAPI.push(
+                        getReactionRef()
+                    );
+
+
+                await window.FirebaseAPI.set(
+                    newRef,
+                    {
+                        type:
+                            type,
+
+                        sender:
+                            myName,
+
+                        target:
+                            target,
+
+                        timestamp:
+                            Date.now()
+                    }
+                );
+
+
+                /*
+                 * Dọn reaction cũ do chính client tạo.
+                 */
+
+                setTimeout(
+                    async () => {
+
+                        try {
+
+                            await window.FirebaseAPI.remove(
+                                newRef
+                            );
+
+                        } catch {
+                            // Không cần báo lỗi.
+                        }
+
+                    },
+                    8000
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "REACTION:",
+                    error
+                );
+
+                showToast(
+                    "Không gửi được hiệu ứng."
+                );
+            }
+
+        }
+
+
+        /* ========================================================
+           REACTION EFFECT
+        ======================================================== */
+
+        function triggerReactionEffect(
+            type,
+            sender,
+            target
+        ) {
+
+            if (
+                type === "heart"
+            ) {
+
+                const heart =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                heart.className =
+                    "floating-emoji";
+
+
+                heart.innerText =
+                    "❤️";
+
+
+                heart.style.left =
+                    (
+                        Math.random() *
+                        80 +
+                        10
+                    ) +
+                    "vw";
+
+
+                heart.style.fontSize =
+                    (
+                        2 +
+                        Math.random() *
+                        1.5
+                    ) +
+                    "rem";
+
+
+                document.body.appendChild(
+                    heart
+                );
+
+
+                setTimeout(
+                    () => {
+                        heart.remove();
+                    },
+                    3000
+                );
+
+            }
+
+
+            else if (
+                type === "firework"
+            ) {
+
+                if (
+                    typeof confetti ===
+                    "function"
+                ) {
+
+                    confetti({
+                        particleCount:
+                            70,
+
+                        spread:
+                            80,
+
+                        startVelocity:
+                            30,
+
+                        origin: {
+                            x:
+                                Math.random(),
+                            y:
+                                0.65 +
+                                Math.random() *
+                                0.2
+                        }
+                    });
+                }
+
+            }
+
+
+            else if (
+                type === "splash"
+            ) {
+
+                const splash =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                splash.className =
+                    "water-splash-overlay";
+
+
+                splash.innerHTML = `
+                    <div class="text-center">
+
+                        <div>🌊</div>
+
+                        <p
+                            class="
+                                text-white
+                                text-base
+                                font-bold
+                                text-center
+                                mt-2
+                            "
+                        >
+                            ${escapeHTML(
+                                sender ||
+                                "Ai đó"
+                            )}
+                            đã dội nước vào
+                            ${escapeHTML(
+                                target ||
+                                "người dẫn đầu"
+                            )}!
+                        </p>
+
+                    </div>
+                `;
+
+
+                document.body.appendChild(
+                    splash
+                );
+
+
+                $("main-body")
+                    .classList
+                    .add("shake-screen");
+
+
+                setTimeout(
+                    () => {
+
+                        splash.remove();
+
+                        $("main-body")
+                            .classList
+                            .remove(
+                                "shake-screen"
+                            );
+
+                    },
+                    1500
+                );
+
+            }
+
+        }
+
+
+        /* ========================================================
+           CONNECTION ERROR HANDLING
+        ======================================================== */
+
+        window.addEventListener(
+            "online",
+            () => {
+
+                showToast(
+                    "Đã kết nối Internet."
+                );
+
+            }
+        );
+
+
+        window.addEventListener(
+            "offline",
+            () => {
+
+                showToast(
+                    "Mất kết nối Internet."
+                );
+
+            }
+        );
+
+
+        /* ========================================================
+           ESCAPE MODALS WITH ESC
+        ======================================================== */
+
+        document.addEventListener(
+            "keydown",
+            event => {
+
+                if (
+                    event.key !==
+                    "Escape"
+                ) {
+                    return;
+                }
+
+
+                closeSwapModal();
+
+                closeEditModal();
+            }
+        );
+
+
+        /* ========================================================
+           INITIAL PAGE STATE
+        ======================================================== */
+
+        window.addEventListener(
+            "load",
+            () => {
+
+                const params =
+                    new URLSearchParams(
+                        window.location.search
+                    );
+
+
+                const room =
+                    params.get("room");
+
+
+                if (room) {
+
+                    roomId =
+                        sanitizeRoomId(room);
+
+
+                    $("room-info").innerText =
+                        `Phòng ${roomId} - Nhập tên để tham gia`;
+                }
+
+            }
+        );
+
     </script>
+
 </body>
 </html>
+```
