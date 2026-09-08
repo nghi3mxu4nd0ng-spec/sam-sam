@@ -1,10 +1,11 @@
+```html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Phong Thần Bảng</title>
+    <title>Thủy Phong Bảng - Sổ Ghi Điểm Phong Thủy</title>
 
     <!-- =========================================================
          CDN
@@ -2264,31 +2265,6 @@
                         };
 
                         return;
-                    }
-
-
-                    /*
-                     * Kiểm tra xem nếu số người chơi hiện tại < 5
-                     * và có khán giả đang chờ -> đẩy khán giả tham gia sớm nhất lên làm người chơi.
-                     */
-
-                    let currentCount = Object.keys(current.players).length;
-
-                    while (currentCount < MAX_PLAYERS && Object.keys(current.spectators).length > 0) {
-                        const sortedSpectators = Object.entries(current.spectators)
-                            .sort((a, b) => (a[1].joinedAt || 0) - (b[1].joinedAt || 0));
-
-                        const [oldestSpectatorId, oldestSpectatorData] = sortedSpectators[0];
-
-                        current.players[oldestSpectatorId] = {
-                            name: oldestSpectatorData.name,
-                            isWin: false,
-                            inputVal: "",
-                            joinedAt: oldestSpectatorData.joinedAt || Date.now()
-                        };
-
-                        delete current.spectators[oldestSpectatorId];
-                        currentCount++;
                     }
 
 
@@ -5526,3 +5502,4 @@
 
 </body>
 </html>
+```
