@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Thủy Phong Bảng - Sổ Ghi Điểm Phong Thủy v7</title>
+    <title>Phong Bảng </title>
 
     <!-- =========================================================
          CDN
@@ -3835,6 +3835,15 @@
 
             try {
                 await window.FirebaseAPI.update(window.FirebaseAPI.ref(window.FirebaseAPI.db), updates);
+
+                // Khi người cuối cùng hoàn tất dữ liệu của ván hiện tại,
+                // tự động chốt ván: lưu vào lịch sử, cộng dồn tổng điểm,
+                // rồi xóa toàn bộ dữ liệu nhập tạm để bắt đầu ván mới.
+                setTimeout(() => {
+                    if (isRoundReadyToSubmit()) {
+                        submitRound();
+                    }
+                }, 150);
             } catch (error) {
                 console.error("UPDATE INPUT:", error);
                 showAlert("Không thể cập nhật điểm.");
@@ -4088,6 +4097,28 @@
             await updateInput(playerId, "inputBy", myPlayerId);
             await updateInput(playerId, "inputByName", myName || "Người chơi");
             await updateInput(playerId, "inputAt", Date.now());
+        }
+
+        /* ========================================================
+           AUTO SUBMIT: VÁN ĐÃ ĐỦ DỮ LIỆU
+        ======================================================== */
+
+        function isRoundReadyToSubmit() {
+            if (!isPlayer || roomData.isClosed || submittingRound) return false;
+
+            const players = roomData.players || {};
+            const playerIds = Object.keys(players);
+            if (!playerIds.length) return false;
+
+            const winners = playerIds.filter(id => players[id]?.isWin === true);
+            if (winners.length !== 1) return false;
+
+            // Người thắng không nhập điểm. Tất cả người còn lại phải
+            // hoàn tất điểm của chính họ trước khi hệ thống tự chốt ván.
+            return playerIds.every(id => {
+                if (id === winners[0]) return true;
+                return parseScore(String(players[id]?.inputVal ?? '').trim()) !== null;
+            });
         }
 
         /* ========================================================
