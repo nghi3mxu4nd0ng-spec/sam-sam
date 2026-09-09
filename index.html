@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Phong Bảng</title>
+    <title>Phong Bảng </title>
 
     <!-- =========================================================
          CDN
@@ -627,7 +627,44 @@
             .keypad-btn { min-height:54px; font-size:1rem; }
             .quick-score-btn { min-height:46px; font-size:.88rem; }
         }
-    </style>
+    
+/* ========================================================
+   SCORE KEYPAD V4 — COMPACT / CLEAN / ONE-HAND UI
+   ======================================================== */
+.score-keypad-modal{align-items:center!important;padding:10px!important;background:rgba(2,6,23,.76)!important;backdrop-filter:blur(12px)!important}
+.score-keypad-shell{width:min(360px,calc(100vw - 20px))!important;max-height:90vh!important;padding:12px!important;border-radius:24px!important;background:linear-gradient(155deg,rgba(9,18,35,.99),rgba(5,35,55,.98))!important;box-shadow:0 24px 70px rgba(0,0,0,.65),0 0 35px rgba(14,165,233,.10)!important}
+.score-modern-header{margin-bottom:8px!important;gap:8px!important}
+.score-modern-kicker{font-size:7px!important;letter-spacing:.14em!important}
+.score-modern-title{font-size:17px!important;margin-top:2px!important}
+.score-modern-sub{display:none!important}
+.score-modal-meta{margin-top:5px!important;gap:5px!important;flex-wrap:nowrap!important}
+.score-target-chip{font-size:8px!important;padding:5px 7px!important;margin-top:0!important}
+.score-current-total{font-size:8px!important;padding:5px 7px!important;white-space:nowrap!important}
+.score-current-total strong{font-size:9px!important}
+.score-close-modern{width:34px!important;height:34px!important;border-radius:11px!important;font-size:19px!important;flex:0 0 34px}
+.score-display-modern{min-height:76px!important;height:76px!important;margin:2px 0 8px!important;border-radius:18px!important;font-size:46px!important;letter-spacing:-.06em!important}
+.score-display-modern::before{top:8px!important;left:11px!important;font-size:7px!important}
+.score-display-modern::after{bottom:8px!important}
+.score-key-row{grid-template-columns:repeat(4,1fr)!important;gap:6px!important;margin-bottom:6px!important}
+.modern-key{min-height:42px!important;height:42px!important;border-radius:12px!important;font-size:13px!important}
+.keypad-grid{gap:6px!important}
+.keypad-grid .modern-key{min-height:46px!important;height:46px!important;border-radius:12px!important;font-size:18px!important}
+/* V12 had a second tools row duplicating the same functions; remove it for a cleaner keypad. */
+.score-input-tools{display:none!important}
+.winner-toggle-modern{min-height:43px!important;height:43px!important;margin-top:7px!important;border-radius:13px!important;font-size:10px!important}
+.score-action-row{gap:6px!important;margin-top:7px!important}
+.score-action-btn{min-height:44px!important;height:44px!important;border-radius:13px!important;font-size:11px!important}
+@media(max-width:480px){
+ .score-keypad-modal{padding:8px!important}
+ .score-keypad-shell{width:min(350px,calc(100vw - 16px))!important;max-height:92vh!important;padding:10px!important;border-radius:22px!important}
+ .score-display-modern{height:72px!important;min-height:72px!important;font-size:42px!important}
+ .keypad-grid .modern-key{min-height:44px!important;height:44px!important}
+ .score-key-row .modern-key{min-height:40px!important;height:40px!important}
+ .winner-toggle-modern{height:41px!important;min-height:41px!important}
+ .score-action-btn{height:42px!important;min-height:42px!important}
+}
+
+</style>
 
     <!-- =========================================================
          FIREBASE
@@ -2886,7 +2923,8 @@
                             isWin: false,
                             inputVal: "",
                             joinedAt: Date.now(),
-                            seatIndex: seatIndex
+                            seatIndex: seatIndex,
+                            totalScore: 0
                         };
 
                         result = {
@@ -3071,7 +3109,7 @@
         function getDraftSignature(players) {
             return Object.keys(players || {}).sort().map(id => {
                 const p = players[id] || {};
-                return `${id}:${p.isWin ? "W" : ""}:${String(p.inputVal ?? "")}`;
+                return `${id}:${p.isWin ? "W" : ""}:${String(p.inputVal ?? "")}:${Number(p.inputAt || 0)}:${String(p.inputBy || "")}`;
             }).join("|");
         }
 
@@ -4068,60 +4106,124 @@
 
         async function submitRound() {
             if (!isPlayer || roomData.isClosed || submittingRound) return;
-            const players = roomData.players || {};
-            const playerIds = Object.keys(players);
-            if (!playerIds.length) return;
             submittingRound = true;
-            try {
-                const winners = playerIds.filter(id => Boolean(players[id]?.isWin));
-                if (winners.length !== 1) return;
-                const winnerId = winners[0];
-                const currentRoundScores = {};
-                let loserPool = 0;
-                const missing = [];
-                for (const id of playerIds) {
-                    if (id === winnerId) continue;
-                    const parsed = parseScore(players[id]?.inputVal);
-                    if (parsed === null) { missing.push(players[id]?.name || "Người chơi"); continue; }
-                    const loserScore = parsed === 0 ? 0 : -Math.abs(parsed);
-                    currentRoundScores[id] = loserScore;
-                    loserPool += Math.abs(loserScore);
-                }
-                if (missing.length) return;
-                if (loserPool <= 0) { showAlert("Ván này cần ít nhất một người thua có điểm khác 0."); return; }
-                // Người thắng không nhập điểm: hệ thống tự nhận đúng giá trị đối ứng của tổng người thua.
-                currentRoundScores[winnerId] = Math.round(loserPool * 100) / 100;
-                const total = Math.round(Object.values(currentRoundScores).reduce((a,b)=>a+Number(b),0)*100)/100;
-                if (total !== 0) { showAlert("Không thể cân bằng tổng điểm ván."); return; }
+            let committedRound = null;
+            let committedRoundNumber = 0;
 
-                const rounds = [ ...(roomData.rounds || []), {
-                    scores: currentRoundScores,
-                    playerNames: Object.fromEntries(playerIds.map(id => [id, players[id]?.name || "Người chơi"])),
-                    winnerId,
-                    createdAt: Date.now(),
-                    createdBy: myPlayerId
-                }];
-                const resetPlayers = {};
-                playerIds.forEach(id => {
-                    const old = players[id] || {};
-                    const previousTotal = Number.isFinite(Number(old.totalScore)) ? Number(old.totalScore) : Number(calculateTotalScores()[id] || 0);
-                    resetPlayers[id] = {
-                        ...old,
-                        totalScore: Math.round((previousTotal + Number(currentRoundScores[id] || 0)) * 100) / 100,
-                        isWin: false,
-                        inputVal: "",
-                        inputBy: "",
-                        inputByName: "",
-                        inputAt: 0
+            try {
+                const roomRef = getRoomRef();
+
+                // Chốt ván bằng TRANSACTION để chỉ một client có thể commit ván,
+                // tránh trường hợp nhiều người cùng thấy đủ điểm và tạo trùng round.
+                await window.FirebaseAPI.runTransaction(roomRef, (current) => {
+                    if (!current || current.isClosed) return current;
+                    const players = current.players || {};
+                    const playerIds = Object.keys(players);
+                    if (!playerIds.length) return current;
+
+                    const winners = playerIds.filter(id => Boolean(players[id]?.isWin));
+                    if (winners.length !== 1) return current;
+                    const winnerId = winners[0];
+
+                    const currentRoundScores = {};
+                    let loserPool = 0;
+
+                    for (const id of playerIds) {
+                        if (id === winnerId) continue;
+                        const parsed = parseScore(players[id]?.inputVal);
+                        if (parsed === null) return current;
+                        const loserScore = parsed === 0 ? 0 : -Math.abs(parsed);
+                        currentRoundScores[id] = loserScore;
+                        loserPool += Math.abs(loserScore);
+                    }
+
+                    if (loserPool <= 0) return current;
+
+                    // Người thắng tuyệt đối không nhập điểm trực tiếp.
+                    // Hệ thống tự cân bằng bằng tổng trị tuyệt đối của người thua.
+                    currentRoundScores[winnerId] = Math.round(loserPool * 100) / 100;
+
+                    const balance = Math.round(
+                        Object.values(currentRoundScores)
+                            .reduce((sum, value) => sum + Number(value || 0), 0) * 100
+                    ) / 100;
+                    if (balance !== 0) return current;
+
+                    const rounds = Array.isArray(current.rounds)
+                        ? [...current.rounds]
+                        : Object.values(current.rounds || {});
+
+                    const roundNumber = rounds.length + 1;
+                    const newRound = {
+                        roundNo: roundNumber,
+                        scores: currentRoundScores,
+                        playerNames: Object.fromEntries(
+                            playerIds.map(id => [id, players[id]?.name || "Người chơi"])
+                        ),
+                        winnerId,
+                        createdAt: Date.now(),
+                        createdBy: myPlayerId
                     };
+                    rounds.push(newRound);
+
+                    const totalsFromHistory = {};
+                    for (const id of playerIds) totalsFromHistory[id] = 0;
+                    for (const round of rounds.slice(0, -1)) {
+                        for (const [id, score] of Object.entries(round?.scores || {})) {
+                            if (Object.prototype.hasOwnProperty.call(totalsFromHistory, id)) {
+                                totalsFromHistory[id] += Number(score) || 0;
+                            }
+                        }
+                    }
+
+                    const nextPlayers = {};
+                    for (const id of playerIds) {
+                        const old = players[id] || {};
+                        const stored = Number(old.totalScore);
+                        const previousTotal = Number.isFinite(stored)
+                            ? stored
+                            : (totalsFromHistory[id] || 0);
+                        const nextTotal = Math.round(
+                            (previousTotal + Number(currentRoundScores[id] || 0)) * 100
+                        ) / 100;
+
+                        nextPlayers[id] = {
+                            ...old,
+                            totalScore: nextTotal,
+                            isWin: false,
+                            inputVal: "",
+                            inputBy: "",
+                            inputByName: "",
+                            inputAt: 0
+                        };
+                    }
+
+                    current.players = nextPlayers;
+                    current.rounds = rounds;
+                    current.warningMsg = "";
+                    current.lastRoundAt = Date.now();
+                    current.currentRoundNo = roundNumber + 1;
+
+                    committedRound = newRound;
+                    committedRoundNumber = roundNumber;
+                    return current;
                 });
-                await window.FirebaseAPI.update(getRoomRef(), { players: resetPlayers, rounds, warningMsg: "" });
-                showToast(`🏆 Ván ${rounds.length} hoàn tất · Đã cộng dồn tổng điểm`);
-                setTimeout(() => { if (typeof confetti === "function") confetti({particleCount:55,spread:75,origin:{y:.72}}); }, 50);
+
+                if (committedRound) {
+                    closeRequiredScorePopup();
+                    showToast(`🏆 Ván ${committedRoundNumber} hoàn tất · Tổng điểm đã cộng dồn · Bắt đầu ván ${committedRoundNumber + 1}`);
+                    setTimeout(() => {
+                        if (typeof confetti === "function") {
+                            confetti({ particleCount: 80, spread: 85, origin: { y: .72 } });
+                        }
+                    }, 50);
+                }
             } catch (error) {
                 console.error("SUBMIT ROUND:", error);
                 showAlert("Không thể chốt ván. Có thể Firebase Rules đã từ chối thao tác.");
-            } finally { submittingRound = false; }
+            } finally {
+                submittingRound = false;
+            }
         }
 
         function triggerWinnerCelebration(round) {
