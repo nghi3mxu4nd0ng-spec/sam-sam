@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Phong Bảng</title>
+    <title>Thủy Phong Bảng - Sổ Ghi Điểm Phong Thủy v7</title>
 
     <!-- =========================================================
          CDN
@@ -489,6 +489,16 @@
         .winner-toggle-modern{position:relative;overflow:hidden;width:100%;min-height:51px;margin-top:11px;border-radius:17px;font-weight:1000;font-size:12px;transition:.15s;box-shadow:0 8px 25px rgba(245,158,11,.08)}
         .winner-toggle-modern::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent,rgba(255,255,255,.08),transparent);transform:translateX(-100%);animation:winnerSheen 2.8s ease-in-out infinite}
         @keyframes winnerSheen{45%,100%{transform:translateX(100%)}}
+        .score-modal-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:7px}
+        .score-current-total{display:inline-flex;align-items:center;gap:4px;padding:6px 9px;border-radius:999px;background:rgba(15,23,42,.68);border:1px solid rgba(148,163,184,.14);color:#94a3b8;font-size:9px;font-weight:800}
+        .score-current-total strong{color:#f8fafc;font-size:10px}
+        .score-input-tools{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:0 0 8px}
+        .score-tool-btn{height:39px;border-radius:13px;background:rgba(15,23,42,.78);border:1px solid rgba(125,211,252,.12);color:#cbd5e1;font-weight:1000;font-size:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);transition:.12s}
+        .score-tool-btn:active{transform:scale(.94);background:rgba(30,41,59,.95)}
+        .score-tool-negative{color:#fda4af;border-color:rgba(251,113,133,.18)}
+        .keypad-grid{gap:7px!important}
+        .keypad-grid .modern-key{min-height:55px!important;border-radius:16px!important}
+        @media(max-width:480px){.score-keypad-shell{padding:13px!important;border-radius:27px 27px 0 0!important}.score-display-modern{min-height:100px!important;margin-bottom:9px!important}.keypad-grid .modern-key{min-height:52px!important}.score-input-tools{gap:6px}.score-tool-btn{height:37px}}
         .score-action-row{display:grid;grid-template-columns:.75fr 1.25fr;gap:8px;margin-top:9px}
         .score-action-btn{min-height:54px;border-radius:17px;font-weight:1000;font-size:13px;transition:transform .1s,filter .1s}
         .score-action-btn:active{transform:scale(.96)}
@@ -1811,7 +1821,10 @@
               <div class="min-w-0">
                 <div class="score-modern-kicker">⚡ Bảng điều khiển điểm</div>
                 <div id="score-keypad-player" class="score-modern-title truncate">Người chơi</div>
-                <div id="score-keypad-mode" class="score-target-chip">✎ Đang nhập điểm</div>
+                <div class="score-modal-meta">
+                  <div id="score-keypad-mode" class="score-target-chip">✎ Đang nhập điểm</div>
+                  <div id="score-keypad-total" class="score-current-total">Tổng hiện có: <strong>0</strong></div>
+                </div>
               </div>
               <button onclick="closeScoreKeypad()" class="score-close-modern" aria-label="Đóng">×</button>
             </div>
@@ -1829,19 +1842,14 @@
               <button class="keypad-btn modern-key text-white" onclick="appendScoreDigit('1')">1</button><button class="keypad-btn modern-key text-white" onclick="appendScoreDigit('2')">2</button><button class="keypad-btn modern-key text-white" onclick="appendScoreDigit('3')">3</button>
               <button class="keypad-btn modern-key text-white" onclick="appendScoreDigit('4')">4</button><button class="keypad-btn modern-key text-white" onclick="appendScoreDigit('5')">5</button><button class="keypad-btn modern-key text-white" onclick="appendScoreDigit('6')">6</button>
               <button class="keypad-btn modern-key text-white" onclick="appendScoreDigit('7')">7</button><button class="keypad-btn modern-key text-white" onclick="appendScoreDigit('8')">8</button><button class="keypad-btn modern-key text-white" onclick="appendScoreDigit('9')">9</button>
-              <button class="keypad-btn modern-key text-white" onclick="appendScoreDigit('00')">00</button><button class="keypad-btn modern-key text-white" onclick="appendScoreDigit('0')">0</button><button class="keypad-btn modern-key text-cyan-200" onclick="appendScoreDecimal()">.</button>
+              <button class="keypad-btn modern-key text-white" onclick="appendScoreDigit('0')">0</button><button class="keypad-btn modern-key text-cyan-200" onclick="appendScoreDecimal()">.</button><button class="keypad-btn modern-key text-rose-200" onclick="clearScoreInput()">C</button>
             </div>
 
-            <div class="score-quick-title"><span>Điểm nhanh</span><span>Chạm 1 lần để áp dụng</span></div>
-            <div class="quick-score-grid">
-              <button class="quick-score-btn bg-rose-500/15 border border-rose-400/25 text-rose-200" onclick="setQuickScore(-10)">−10</button>
-              <button class="quick-score-btn bg-rose-500/15 border border-rose-400/25 text-rose-200" onclick="setQuickScore(-50)">−50</button>
-              <button class="quick-score-btn bg-emerald-500/15 border border-emerald-400/25 text-emerald-200" onclick="setQuickScore(10)">+10</button>
-              <button class="quick-score-btn bg-emerald-500/15 border border-emerald-400/25 text-emerald-200" onclick="setQuickScore(50)">+50</button>
-              <button class="quick-score-btn bg-rose-500/15 border border-rose-400/25 text-rose-200" onclick="setQuickScore(-100)">−100</button>
-              <button class="quick-score-btn bg-rose-500/15 border border-rose-400/25 text-rose-200" onclick="setQuickScore(-200)">−200</button>
-              <button class="quick-score-btn bg-emerald-500/15 border border-emerald-400/25 text-emerald-200" onclick="setQuickScore(100)">+100</button>
-              <button class="quick-score-btn bg-emerald-500/15 border border-emerald-400/25 text-emerald-200" onclick="setQuickScore(200)">+200</button>
+            <div class="score-input-tools" aria-label="Công cụ nhập điểm">
+              <button type="button" class="score-tool-btn score-tool-negative" onclick="setScoreValue('-')">−</button>
+              <button type="button" class="score-tool-btn" onclick="clearScoreInput()">C</button>
+              <button type="button" class="score-tool-btn" onclick="toggleScoreSign()">±</button>
+              <button type="button" class="score-tool-btn" onclick="backspaceScoreInput()">⌫</button>
             </div>
 
             <button id="score-keypad-winner-toggle" type="button" onclick="toggleKeypadWinner()" class="winner-toggle-modern bg-amber-500/15 border border-amber-400/30 text-amber-200">🏆 Đánh dấu THẮNG</button>
@@ -3887,6 +3895,9 @@
             scoreModalValue = String(roomData.players[playerId].inputVal ?? "");
             scoreModalWinner = Boolean(roomData.players[playerId].isWin);
             $("score-keypad-player").innerText = roomData.players[playerId].name || "Người chơi";
+            const currentTotal = Number(roomData.players[playerId].totalScore || 0);
+            const totalEl = $("score-keypad-total");
+            if (totalEl) totalEl.innerHTML = `Tổng hiện có: <strong>${formatScore(currentTotal)}</strong>`;
             updateScoreKeypadDisplay();
             updateKeypadWinnerButton();
             $("score-keypad-modal").classList.remove("hidden");
