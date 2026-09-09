@@ -1,11 +1,10 @@
-```html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Thủy Phong Bảng - Sổ Ghi Điểm Phong Thủy</title>
+    <title>Phong Thần Bảng</title>
 
     <!-- =========================================================
          CDN
@@ -359,6 +358,48 @@
             height: 7px;
             border-radius: 999px;
             display: inline-block;
+        }
+
+        /* ========================================================
+           MOBILE SCORE KEYPAD / MANAGEMENT UI
+        ======================================================== */
+        .score-keypad-modal { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+        .score-display {
+            min-height: 86px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size: clamp(2.5rem, 12vw, 4rem);
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            font-variant-numeric: tabular-nums;
+        }
+        .keypad-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+        .keypad-btn {
+            min-height:58px;
+            border-radius:16px;
+            font-size:1.05rem;
+            font-weight:900;
+            touch-action:manipulation;
+            user-select:none;
+            -webkit-user-select:none;
+            -webkit-tap-highlight-color:transparent;
+        }
+        .quick-score-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+        .quick-score-btn {
+            min-height:50px;
+            border-radius:14px;
+            font-size:.95rem;
+            font-weight:900;
+            touch-action:manipulation;
+        }
+        .player-score-card { transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
+        .player-score-card:active { transform:scale(.99); }
+        .score-value-large { font-size:clamp(1.65rem,7vw,2.4rem); line-height:1; font-weight:900; font-variant-numeric:tabular-nums; }
+        .host-action-btn { min-height:44px; touch-action:manipulation; }
+        @media (max-width: 380px) {
+            .keypad-btn { min-height:54px; font-size:1rem; }
+            .quick-score-btn { min-height:46px; font-size:.88rem; }
         }
     </style>
 
@@ -1364,6 +1405,30 @@
 
 
             <!-- =================================================
+                 HOST MANAGEMENT
+            ================================================== -->
+            <div id="host-management" class="hidden glass-card rounded-3xl p-5 space-y-4 border-amber-400/20">
+                <div class="flex items-center justify-between gap-3 border-b border-amber-400/20 pb-3">
+                    <div>
+                        <h3 class="font-black text-amber-200 flex items-center gap-2">
+                            <i class="fa-solid fa-crown text-amber-400"></i>
+                            Quản Lý Người Chơi
+                        </h3>
+                        <p class="text-[11px] text-amber-200/60 mt-1">Chỉ Chủ Phòng có quyền thêm, xóa, chuyển vị trí.</p>
+                    </div>
+                    <span id="host-management-count" class="text-xs font-black bg-amber-500/15 text-amber-200 border border-amber-400/25 px-2.5 py-1 rounded-xl">0/5</span>
+                </div>
+                <div id="host-players-list" class="space-y-2"></div>
+                <div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xs font-black text-purple-200">👁️ Khán Giả</span>
+                        <span id="host-spectator-count" class="text-[10px] text-purple-300/60">0</span>
+                    </div>
+                    <div id="host-spectators-list" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- =================================================
                  HISTORY
             ================================================== -->
 
@@ -1446,6 +1511,65 @@
 
     </main>
 
+
+    <!-- =========================================================
+         SCORE KEYPAD MODAL
+    ========================================================== -->
+    <div id="score-keypad-modal"
+         class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 score-keypad-modal">
+        <div class="glass-card border-cyan-400/40 rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 w-full max-w-md space-y-4 shadow-2xl modal-enter">
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                    <p class="text-[10px] uppercase tracking-wider text-cyan-300/70 font-bold">Nhập điểm</p>
+                    <h3 id="score-keypad-player" class="text-lg font-black text-white truncate">Người chơi</h3>
+                </div>
+                <button onclick="closeScoreKeypad()" class="w-11 h-11 rounded-2xl bg-slate-800/80 border border-slate-600/60 text-slate-200 text-xl font-black" aria-label="Đóng">×</button>
+            </div>
+
+            <div id="score-keypad-display" class="score-display rounded-3xl bg-slate-950/50 border border-cyan-400/20 text-white">0</div>
+
+            <div class="grid grid-cols-4 gap-2">
+                <button class="keypad-btn bg-rose-500/20 border border-rose-400/30 text-rose-200" onclick="toggleScoreSign()">− / +</button>
+                <button class="keypad-btn bg-slate-700/60 border border-slate-500/40 text-white" onclick="setScoreValue('0')">0</button>
+                <button class="keypad-btn bg-slate-700/60 border border-slate-500/40 text-white" onclick="backspaceScoreInput()">⌫</button>
+                <button class="keypad-btn bg-red-500/20 border border-red-400/30 text-red-200" onclick="clearScoreInput()">Xóa</button>
+            </div>
+
+            <div class="keypad-grid">
+                <button class="keypad-btn bg-sky-500/15 border border-sky-400/25 text-white" onclick="appendScoreDigit('1')">1</button>
+                <button class="keypad-btn bg-sky-500/15 border border-sky-400/25 text-white" onclick="appendScoreDigit('2')">2</button>
+                <button class="keypad-btn bg-sky-500/15 border border-sky-400/25 text-white" onclick="appendScoreDigit('3')">3</button>
+                <button class="keypad-btn bg-sky-500/15 border border-sky-400/25 text-white" onclick="appendScoreDigit('4')">4</button>
+                <button class="keypad-btn bg-sky-500/15 border border-sky-400/25 text-white" onclick="appendScoreDigit('5')">5</button>
+                <button class="keypad-btn bg-sky-500/15 border border-sky-400/25 text-white" onclick="appendScoreDigit('6')">6</button>
+                <button class="keypad-btn bg-sky-500/15 border border-sky-400/25 text-white" onclick="appendScoreDigit('7')">7</button>
+                <button class="keypad-btn bg-sky-500/15 border border-sky-400/25 text-white" onclick="appendScoreDigit('8')">8</button>
+                <button class="keypad-btn bg-sky-500/15 border border-sky-400/25 text-white" onclick="appendScoreDigit('9')">9</button>
+                <button class="keypad-btn bg-slate-700/60 border border-slate-500/40 text-white" onclick="appendScoreDigit('00')">00</button>
+                <button class="keypad-btn bg-sky-500/15 border border-sky-400/25 text-white" onclick="appendScoreDigit('0')">0</button>
+                <button class="keypad-btn bg-slate-700/60 border border-slate-500/40 text-white" onclick="appendScoreDecimal()">.</button>
+            </div>
+
+            <div>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2">Điểm nhanh</p>
+                <div class="quick-score-grid">
+                    <button class="quick-score-btn bg-rose-500/15 border border-rose-400/25 text-rose-200" onclick="setQuickScore(-10)">−10</button>
+                    <button class="quick-score-btn bg-rose-500/15 border border-rose-400/25 text-rose-200" onclick="setQuickScore(-50)">−50</button>
+                    <button class="quick-score-btn bg-emerald-500/15 border border-emerald-400/25 text-emerald-200" onclick="setQuickScore(10)">+10</button>
+                    <button class="quick-score-btn bg-emerald-500/15 border border-emerald-400/25 text-emerald-200" onclick="setQuickScore(50)">+50</button>
+                    <button class="quick-score-btn bg-rose-500/15 border border-rose-400/25 text-rose-200" onclick="setQuickScore(-100)">−100</button>
+                    <button class="quick-score-btn bg-rose-500/15 border border-rose-400/25 text-rose-200" onclick="setQuickScore(-200)">−200</button>
+                    <button class="quick-score-btn bg-emerald-500/15 border border-emerald-400/25 text-emerald-200" onclick="setQuickScore(100)">+100</button>
+                    <button class="quick-score-btn bg-emerald-500/15 border border-emerald-400/25 text-emerald-200" onclick="setQuickScore(200)">+200</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-1">
+                <button onclick="closeScoreKeypad()" class="py-4 rounded-2xl bg-slate-800/80 border border-slate-600/60 text-slate-200 font-black">Hủy</button>
+                <button onclick="confirmScoreInput()" class="py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-black shadow-lg shadow-cyan-500/25">Xác nhận</button>
+            </div>
+        </div>
+    </div>
 
     <!-- =========================================================
          SWAP MODAL
@@ -1720,6 +1844,10 @@
         let roomUnsubscribe = null;
 
         let reactionsUnsubscribe = null;
+
+        let scoreModalPlayerId = null;
+        let scoreModalValue = "";
+        let submittingRound = false;
 
         let roomData = {
             hostId: "",
@@ -2216,7 +2344,8 @@
                                     name: name,
                                     isWin: false,
                                     inputVal: "",
-                                    joinedAt: Date.now()
+                                    joinedAt: Date.now(),
+                                    seatIndex: 0
                                 }
                             },
 
@@ -2278,6 +2407,11 @@
 
                         current.players[playerId].name =
                             name;
+                        if (!Number.isInteger(Number(current.players[playerId].seatIndex))) {
+                            const used = new Set(Object.values(current.players).map(p => Number(p?.seatIndex)).filter(Number.isInteger));
+                            const available = [0,1,2,3,4].find(i => !used.has(i));
+                            current.players[playerId].seatIndex = available ?? 0;
+                        }
 
                         result = {
                             ok: true,
@@ -2363,11 +2497,19 @@
                         MAX_PLAYERS
                     ) {
 
+                        const usedSeats = new Set(
+                            Object.values(current.players)
+                                .map(p => Number(p?.seatIndex))
+                                .filter(Number.isInteger)
+                        );
+                        const seatIndex = [0,1,2,3,4].find(i => !usedSeats.has(i)) ?? 0;
+
                         current.players[playerId] = {
                             name: name,
                             isWin: false,
                             inputVal: "",
-                            joinedAt: Date.now()
+                            joinedAt: Date.now(),
+                            seatIndex: seatIndex
                         };
 
                         result = {
@@ -2859,6 +3001,8 @@
             }
 
 
+            renderHostManagement(isHost);
+
             /*
              * Warning.
              */
@@ -3267,164 +3411,51 @@
             playerIds,
             players
         ) {
+            const container = $("players-input-list");
 
-            const container =
-                $("players-input-list");
+            const orderedIds = [...playerIds].sort((a,b) => {
+                const sa = Number.isInteger(Number(players[a]?.seatIndex)) ? Number(players[a].seatIndex) : 999;
+                const sb = Number.isInteger(Number(players[b]?.seatIndex)) ? Number(players[b].seatIndex) : 999;
+                return sa - sb || a.localeCompare(b);
+            });
 
+            container.innerHTML = orderedIds.map(id => {
+                const player = players[id] || {};
+                const isMe = id === myPlayerId;
+                const isWin = Boolean(player.isWin);
+                const value = player.inputVal ?? "";
+                const parsed = parseScore(value);
+                const displayValue = value === "" ? "Chưa nhập" : formatScore(parsed ?? value);
 
-            container.innerHTML =
-                playerIds
-                    .map(id => {
-
-                        const player =
-                            players[id] || {};
-
-                        const isMe =
-                            id === myPlayerId;
-
-                        const isWin =
-                            Boolean(player.isWin);
-
-                        const inputVal =
-                            player.inputVal ?? "";
-
-
-                        return `
-                            <div
-                                class="
-                                    p-3.5
-                                    rounded-2xl
-                                    ${
-                                        isMe
-                                            ? "bg-sky-500/10 border-sky-400/40"
-                                            : "glass-input"
-                                    }
-                                    border
-                                    space-y-2
-                                "
-                            >
-
-                                <div
-                                    class="
-                                        flex
-                                        justify-between
-                                        items-center
-                                        gap-2
-                                    "
-                                >
-
-                                    <span
-                                        class="
-                                            font-bold
-                                            text-xs
-                                            ${
-                                                isMe
-                                                    ? "text-sky-300"
-                                                    : "text-slate-200"
-                                            }
-                                            truncate
-                                        "
-                                    >
-                                        ${escapeHTML(
-                                            player.name ||
-                                            "Người chơi"
-                                        )}
-
-                                        ${
-                                            isMe
-                                                ? "(Tôi)"
-                                                : ""
-                                        }
-                                    </span>
-
-
-                                    <label
-                                        class="
-                                            flex
-                                            items-center
-                                            gap-1.5
-                                            cursor-pointer
-                                            shrink-0
-                                        "
-                                    >
-
-                                        <input
-                                            type="checkbox"
-                                            ${
-                                                isWin
-                                                    ? "checked"
-                                                    : ""
-                                            }
-                                            onchange="
-                                                updateInput(
-                                                    '${escapeJS(id)}',
-                                                    'isWin',
-                                                    this.checked
-                                                )
-                                            "
-                                            class="
-                                                w-4
-                                                h-4
-                                                accent-emerald-500
-                                                rounded
-                                            "
-                                        >
-
-                                        <span
-                                            class="
-                                                text-xs
-                                                font-bold
-                                                text-emerald-400
-                                            "
-                                        >
-                                            Thắng
-                                        </span>
-
-                                    </label>
-
+                return `
+                    <div class="player-score-card p-4 rounded-3xl ${isWin ? 'bg-amber-500/10 border-amber-400/50 winner-row' : isMe ? 'bg-sky-500/10 border-sky-400/40' : 'bg-slate-900/45 border-sky-400/15'} border space-y-3">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="min-w-0 flex items-center gap-2">
+                                <span class="w-8 h-8 shrink-0 rounded-xl ${isWin ? 'bg-amber-400/20 text-amber-300' : 'bg-sky-400/10 text-sky-300'} flex items-center justify-center text-xs font-black">${Number(player.seatIndex ?? 0) + 1}</span>
+                                <div class="min-w-0">
+                                    <div class="font-black text-sm ${isMe ? 'text-sky-300' : 'text-white'} truncate">${escapeHTML(player.name || 'Người chơi')} ${isMe ? '<span class="text-[10px] text-sky-300/60">(Tôi)</span>' : ''}</div>
+                                    <div class="text-[10px] text-slate-400">${isWin ? '🏆 Người thắng' : 'Điểm thua / điểm nhập'}</div>
                                 </div>
-
-
-                                <div
-                                    class="${
-                                        isWin
-                                            ? "hidden"
-                                            : ""
-                                    }"
-                                >
-
-                                    <input
-                                        type="text"
-                                        inputmode="decimal"
-                                        value="${escapeHTML(
-                                            inputVal
-                                        )}"
-                                        placeholder="Số điểm thua, VD: -50"
-                                        onchange="
-                                            updateInput(
-                                                '${escapeJS(id)}',
-                                                'inputVal',
-                                                this.value.trim()
-                                            )
-                                        "
-                                        class="
-                                            w-full
-                                            glass-input
-                                            px-3
-                                            py-2
-                                            rounded-xl
-                                            text-xs
-                                            outline-none
-                                        "
-                                    >
-
-                                </div>
-
                             </div>
-                        `;
+                            <button type="button" onclick="updateInput('${escapeJS(id)}','isWin',${!isWin})" class="shrink-0 min-h-[44px] px-4 rounded-2xl ${isWin ? 'bg-amber-400 text-slate-950' : 'bg-emerald-500/15 text-emerald-200 border border-emerald-400/30'} font-black text-xs active:scale-95 transition">
+                                ${isWin ? '🏆 THẮNG' : '✓ Chọn Thắng'}
+                            </button>
+                        </div>
 
-                    })
-                    .join("");
+                        ${!isWin ? `
+                            <button type="button" onclick="openScoreKeypad('${escapeJS(id)}')" class="w-full min-h-[74px] rounded-3xl bg-slate-950/45 border border-cyan-400/25 flex items-center justify-between gap-3 px-5 active:scale-[.99] transition">
+                                <span class="text-left">
+                                    <span class="block text-[10px] uppercase tracking-wider text-cyan-300/60 font-bold">Nhấn để nhập điểm</span>
+                                    <span class="block mt-1 text-sm font-black text-white">${value === '' ? 'Mở bàn phím điểm' : 'Đã nhập'}</span>
+                                </span>
+                                <span class="score-value-large ${parsed !== null && parsed < 0 ? 'text-rose-300 glow-score-neg' : parsed !== null && parsed > 0 ? 'text-emerald-300 glow-score-pos' : 'text-slate-300'}">${escapeHTML(String(displayValue))}</span>
+                            </button>
+                        ` : `
+                            <div class="rounded-2xl bg-amber-400/10 border border-amber-400/20 px-4 py-3 text-center text-xs font-black text-amber-200">Người này không cần nhập điểm thua.</div>
+                        `}
+                    </div>
+                `;
+            }).join("");
         }
 
 
@@ -3452,475 +3483,237 @@
             field,
             value
         ) {
-
-            if (
-                !isPlayer ||
-                roomData.isClosed
-            ) {
-                return;
-            }
-
-
-            if (
-                !roomData.players[playerId]
-            ) {
-                return;
-            }
-
-
-            /*
-             * Validate.
-             */
+            if (!isPlayer || roomData.isClosed) return;
+            if (!roomData.players?.[playerId]) return;
 
             if (field === "inputVal") {
-
-                const raw =
-                    String(value || "")
-                        .trim();
-
-
-                if (raw !== "") {
-
-                    const parsed =
-                        parseScore(raw);
-
-
-                    if (
-                        parsed === null
-                    ) {
-
-                        showToast(
-                            "Điểm không hợp lệ."
-                        );
-
-                        renderUI();
-
-                        return;
-                    }
-
-
-                    /*
-                     * Điểm thua phải <= 0.
-                     */
-
-                    if (parsed > 0) {
-
-                        showToast(
-                            "Điểm thua phải là số âm."
-                        );
-
-                        renderUI();
-
-                        return;
-                    }
+                const raw = String(value ?? "").trim();
+                if (raw !== "" && parseScore(raw) === null) {
+                    showToast("Điểm không hợp lệ.");
+                    return;
                 }
-
                 value = raw;
             }
 
-
             const updates = {};
+            updates[`${ROOM_PREFIX}/${roomId}/players/${playerId}/${field}`] = value;
 
-
-            updates[
-                `${ROOM_PREFIX}/${roomId}/players/${playerId}/${field}`
-            ] = value;
-
-
-            if (
-                field === "isWin" &&
-                value === true
-            ) {
-
-                updates[
-                    `${ROOM_PREFIX}/${roomId}/players/${playerId}/inputVal`
-                ] = "";
+            if (field === "isWin" && value === true) {
+                updates[`${ROOM_PREFIX}/${roomId}/players/${playerId}/inputVal`] = "";
             }
-
 
             try {
-
-                await window.FirebaseAPI.update(
-                    window.FirebaseAPI.ref(
-                        window.FirebaseAPI.db
-                    ),
-                    updates
-                );
-
+                await window.FirebaseAPI.update(window.FirebaseAPI.ref(window.FirebaseAPI.db), updates);
             } catch (error) {
-
-                console.error(
-                    "UPDATE INPUT:",
-                    error
-                );
-
-                showAlert(
-                    "Không thể cập nhật điểm."
-                );
-
+                console.error("UPDATE INPUT:", error);
+                showAlert("Không thể cập nhật điểm.");
             }
-
         }
 
+        /* ========================================================
+           SCORE KEYPAD
+        ======================================================== */
+        function openScoreKeypad(playerId) {
+            if (!isPlayer || roomData.isClosed || !roomData.players?.[playerId]) return;
+            scoreModalPlayerId = playerId;
+            scoreModalValue = String(roomData.players[playerId].inputVal ?? "");
+            $("score-keypad-player").innerText = roomData.players[playerId].name || "Người chơi";
+            updateScoreKeypadDisplay();
+            $("score-keypad-modal").classList.remove("hidden");
+        }
+
+        function closeScoreKeypad() {
+            scoreModalPlayerId = null;
+            scoreModalValue = "";
+            $("score-keypad-modal").classList.add("hidden");
+        }
+
+        function updateScoreKeypadDisplay() {
+            const display = $("score-keypad-display");
+            const value = scoreModalValue === "" || scoreModalValue === "-" ? scoreModalValue || "0" : scoreModalValue;
+            display.innerText = value;
+            const parsed = parseScore(scoreModalValue);
+            display.classList.remove("text-rose-300", "text-emerald-300", "text-white");
+            display.classList.add(parsed !== null && parsed < 0 ? "text-rose-300" : parsed !== null && parsed > 0 ? "text-emerald-300" : "text-white");
+        }
+
+        function appendScoreDigit(digit) {
+            if (scoreModalPlayerId === null) return;
+            let value = scoreModalValue;
+            if (value === "0") value = "";
+            if (value === "-0") value = "-";
+            if (value.replace(/^-/, "").replace(/\./g, "").length >= 6 && digit !== "00") {
+                showToast("Điểm tối đa 6 chữ số.");
+                return;
+            }
+            value += digit;
+            const parsed = parseScore(value);
+            if (parsed !== null && Math.abs(parsed) > 999999) {
+                showToast("Điểm vượt giới hạn.");
+                return;
+            }
+            scoreModalValue = value;
+            updateScoreKeypadDisplay();
+        }
+
+        function appendScoreDecimal() {
+            if (scoreModalValue.includes(".")) return;
+            scoreModalValue = scoreModalValue === "" ? "0." : scoreModalValue + ".";
+            updateScoreKeypadDisplay();
+        }
+
+        function toggleScoreSign() {
+            if (!scoreModalValue || scoreModalValue === "0") return;
+            scoreModalValue = scoreModalValue.startsWith("-") ? scoreModalValue.slice(1) : `-${scoreModalValue}`;
+            updateScoreKeypadDisplay();
+        }
+
+        function clearScoreInput() {
+            scoreModalValue = "";
+            updateScoreKeypadDisplay();
+        }
+
+        function backspaceScoreInput() {
+            scoreModalValue = scoreModalValue.slice(0, -1);
+            updateScoreKeypadDisplay();
+        }
+
+        function setScoreValue(value) {
+            scoreModalValue = String(value);
+            updateScoreKeypadDisplay();
+        }
+
+        function setQuickScore(value) {
+            scoreModalValue = String(value);
+            updateScoreKeypadDisplay();
+        }
+
+        async function confirmScoreInput() {
+            if (scoreModalPlayerId === null) return;
+            const raw = String(scoreModalValue ?? "").trim();
+            if (raw !== "" && parseScore(raw) === null) {
+                showToast("Điểm không hợp lệ.");
+                return;
+            }
+            if (raw !== "") {
+                const parsed = parseScore(raw);
+                if (parsed === null || Math.abs(parsed) > 999999) {
+                    showToast("Điểm không hợp lệ.");
+                    return;
+                }
+            }
+            const playerId = scoreModalPlayerId;
+            closeScoreKeypad();
+            await updateInput(playerId, "inputVal", raw);
+        }
 
         /* ========================================================
            SUBMIT ROUND
         ======================================================== */
 
         async function submitRound() {
+            if (!isPlayer || roomData.isClosed || submittingRound) return;
 
-            if (
-                !isPlayer ||
-                roomData.isClosed
-            ) {
+            const players = roomData.players || {};
+            const playerIds = Object.keys(players);
+            if (!playerIds.length) {
+                showAlert("Chưa có người chơi.");
                 return;
             }
 
-
-            const players =
-                roomData.players || {};
-
-
-            const playerIds =
-                Object.keys(players);
-
-
-            if (
-                playerIds.length === 0
-            ) {
-
-                showAlert(
-                    "Chưa có người chơi."
-                );
-
-                return;
-            }
-
-
+            submittingRound = true;
             const missingPlayers = [];
-
             const winners = [];
-
             const currentRoundScores = {};
-
             let totalLossPool = 0;
 
+            try {
+                for (const playerId of playerIds) {
+                    const player = players[playerId] || {};
+                    const name = player.name || "Người chơi";
 
-            /*
-             * Validate.
-             */
+                    if (player.isWin) {
+                        winners.push(playerId);
+                        continue;
+                    }
 
-            for (
-                const playerId
-                of playerIds
-            ) {
+                    const raw = String(player.inputVal ?? "").trim();
+                    const parsed = parseScore(raw);
+                    if (parsed === null) {
+                        missingPlayers.push(name);
+                        continue;
+                    }
 
-                const player =
-                    players[playerId];
-
-
-                const name =
-                    player.name ||
-                    "Người chơi";
-
-
-                if (player.isWin) {
-
-                    winners.push(
-                        playerId
-                    );
-
-                    continue;
+                    // Cho phép nhập dương/âm/0. Khi chốt, người thua luôn nhận điểm âm.
+                    const loserScore = parsed === 0 ? 0 : -Math.abs(parsed);
+                    currentRoundScores[playerId] = loserScore;
+                    totalLossPool += Math.abs(loserScore);
                 }
 
-
-                const parsed =
-                    parseScore(
-                        player.inputVal
-                    );
-
-
-                if (
-                    parsed === null
-                ) {
-
-                    missingPlayers.push(
-                        name
-                    );
-
-                    continue;
-                }
-
-
-                if (
-                    parsed >= 0
-                ) {
-
-                    showAlert(
-                        `${name}: điểm thua phải là số âm.`
-                    );
-
+                if (missingPlayers.length) {
+                    const message = `Còn người chưa nhập điểm: ${missingPlayers.join(", ")}`;
+                    await window.FirebaseAPI.update(getRoomRef(), { warningMsg: message });
                     return;
                 }
 
-
-                currentRoundScores[
-                    playerId
-                ] = parsed;
-
-
-                totalLossPool +=
-                    Math.abs(parsed);
-            }
-
-
-            /*
-             * Missing.
-             */
-
-            if (
-                missingPlayers.length > 0
-            ) {
-
-                const message =
-                    `Còn người chưa nhập điểm: ${missingPlayers.join(", ")}`;
-
-
-                await window.FirebaseAPI.update(
-                    getRoomRef(),
-                    {
-                        warningMsg:
-                            message
-                    }
-                );
-
-
-                return;
-            }
-
-
-            /*
-             * Phải có winner.
-             */
-
-            if (
-                winners.length === 0
-            ) {
-
-                showAlert(
-                    "Phải có ít nhất 1 người chọn THẮNG!"
-                );
-
-                return;
-            }
-
-
-            /*
-             * Phải có điểm thua.
-             */
-
-            if (
-                totalLossPool <= 0
-            ) {
-
-                showAlert(
-                    "Ván này cần ít nhất một người có điểm thua âm."
-                );
-
-                return;
-            }
-
-
-            /*
-             * Chia điểm thắng.
-             */
-
-            const winShare =
-                Math.round(
-                    (
-                        totalLossPool /
-                        winners.length
-                    ) * 100
-                ) / 100;
-
-
-            winners.forEach(
-                playerId => {
-
-                    currentRoundScores[
-                        playerId
-                    ] = winShare;
-
+                if (!winners.length) {
+                    showAlert("Phải có ít nhất 1 người chọn THẮNG!");
+                    return;
                 }
-            );
 
+                if (totalLossPool <= 0) {
+                    showAlert("Ván này cần ít nhất một người có điểm khác 0.");
+                    return;
+                }
 
-            /*
-             * Kiểm tra tổng điểm.
-             *
-             * Do làm tròn 2 chữ số,
-             * có thể xuất hiện chênh lệch 0.01.
-             */
+                const winShare = Math.round((totalLossPool / winners.length) * 100) / 100;
+                winners.forEach(playerId => { currentRoundScores[playerId] = winShare; });
 
-            let total =
-                Object.values(
-                    currentRoundScores
-                )
-                .reduce(
-                    (sum, score) =>
-                        sum + Number(score),
-                    0
-                );
+                let total = Math.round(Object.values(currentRoundScores).reduce((sum, score) => sum + Number(score), 0) * 100) / 100;
+                if (total !== 0) {
+                    const lastWinner = winners[winners.length - 1];
+                    currentRoundScores[lastWinner] = Math.round((currentRoundScores[lastWinner] - total) * 100) / 100;
+                }
 
+                const finalTotal = Math.round(Object.values(currentRoundScores).reduce((sum, score) => sum + Number(score), 0) * 100) / 100;
+                if (finalTotal !== 0) {
+                    showAlert(`Không thể cân bằng điểm Ván mới. Tổng hiện tại: ${finalTotal}`);
+                    return;
+                }
 
-            total =
-                Math.round(
-                    total * 100
-                ) / 100;
-
-
-            /*
-             * Điều chỉnh sai số làm tròn
-             * vào winner cuối cùng.
-             */
-
-            if (
-                total !== 0
-            ) {
-
-                const correction =
-                    Math.round(
-                        -total * 100
-                    ) / 100;
-
-
-                const lastWinner =
-                    winners[
-                        winners.length - 1
-                    ];
-
-
-                currentRoundScores[
-                    lastWinner
-                ] =
-                    Math.round(
-                        (
-                            currentRoundScores[
-                                lastWinner
-                            ] +
-                            correction
-                        ) * 100
-                    ) / 100;
-            }
-
-
-            /*
-             * Add round.
-             */
-
-            const rounds =
-                [
+                const rounds = [
                     ...(roomData.rounds || []),
                     {
-                        scores:
-                            currentRoundScores,
-
-                        createdAt:
-                            Date.now(),
-
-                        createdBy:
-                            myPlayerId
+                        scores: currentRoundScores,
+                        playerNames: Object.fromEntries(playerIds.map(id => [id, players[id]?.name || "Người chơi"])),
+                        createdAt: Date.now(),
+                        createdBy: myPlayerId
                     }
                 ];
 
+                const resetPlayers = {};
+                playerIds.forEach(playerId => {
+                    resetPlayers[playerId] = { ...(players[playerId] || {}), isWin: false, inputVal: "" };
+                });
 
-            /*
-             * Reset players.
-             */
+                await window.FirebaseAPI.update(getRoomRef(), {
+                    players: resetPlayers,
+                    rounds,
+                    warningMsg: ""
+                });
 
-            const resetPlayers = {};
-
-
-            playerIds.forEach(
-                playerId => {
-
-                    const original =
-                        players[playerId];
-
-
-                    resetPlayers[
-                        playerId
-                    ] = {
-
-                        ...original,
-
-                        isWin: false,
-
-                        inputVal: ""
-                    };
-
-                }
-            );
-
-
-            /*
-             * Ghi atomically.
-             */
-
-            try {
-
-                await window.FirebaseAPI.update(
-                    getRoomRef(),
-                    {
-                        players:
-                            resetPlayers,
-
-                        rounds:
-                            rounds,
-
-                        warningMsg:
-                            ""
+                showToast(`Đã chốt Ván ${rounds.length}`);
+                setTimeout(() => {
+                    if (typeof confetti === "function") {
+                        confetti({ particleCount: 35, spread: 60, origin: { y: 0.75 } });
                     }
-                );
-
-
-                showToast(
-                    `Đã chốt Ván ${rounds.length}`
-                );
-
-
-                /*
-                 * Celebration.
-                 */
-
-                setTimeout(
-                    () => {
-
-                        confetti({
-                            particleCount: 35,
-                            spread: 60,
-                            origin: {
-                                y: 0.75
-                            }
-                        });
-
-                    },
-                    50
-                );
-
-
+                }, 50);
             } catch (error) {
-
-                console.error(
-                    "SUBMIT ROUND:",
-                    error
-                );
-
-                showAlert(
-                    "Không thể chốt ván. Có thể Firebase Rules đã từ chối thao tác."
-                );
+                console.error("SUBMIT ROUND:", error);
+                showAlert("Không thể chốt ván. Có thể Firebase Rules đã từ chối thao tác.");
+            } finally {
+                submittingRound = false;
             }
-
         }
 
 
@@ -4511,6 +4304,126 @@
 
 
         /* ========================================================
+           HOST MANAGEMENT
+        ======================================================== */
+        function renderHostManagement(isHost) {
+            const panel = $("host-management");
+            if (!panel) return;
+            if (!isHost || roomData.isClosed) {
+                panel.classList.add("hidden");
+                return;
+            }
+            panel.classList.remove("hidden");
+
+            const players = roomData.players || {};
+            const spectators = roomData.spectators || {};
+            const playerIds = Object.keys(players).sort((a,b) => {
+                const sa = Number.isInteger(Number(players[a]?.seatIndex)) ? Number(players[a].seatIndex) : 999;
+                const sb = Number.isInteger(Number(players[b]?.seatIndex)) ? Number(players[b].seatIndex) : 999;
+                return sa - sb || a.localeCompare(b);
+            });
+            const spectatorIds = Object.keys(spectators);
+
+            $("host-management-count").innerText = `${playerIds.length}/${MAX_PLAYERS}`;
+            $("host-spectator-count").innerText = `(${spectatorIds.length})`;
+
+            $("host-players-list").innerHTML = playerIds.map((id, index) => {
+                const p = players[id] || {};
+                const isSelf = id === myPlayerId;
+                const seat = Number.isInteger(Number(p.seatIndex)) ? Number(p.seatIndex) + 1 : index + 1;
+                return `
+                    <div class="rounded-2xl bg-slate-950/35 border border-sky-400/15 p-3 space-y-2">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="min-w-0">
+                                <div class="font-black text-sm text-white truncate">${escapeHTML(p.name || 'Người chơi')} ${isSelf ? '👑' : ''}</div>
+                                <div class="text-[10px] text-slate-400">Vị trí chơi: ${seat}</div>
+                            </div>
+                            <span class="text-[10px] font-black px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-400/20">PLAYER</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button class="host-action-btn rounded-xl bg-purple-500/15 border border-purple-400/25 text-purple-200 text-[11px] font-black ${isSelf ? 'opacity-40 cursor-not-allowed' : ''}" ${isSelf ? 'disabled' : ''} onclick="demotePlayerToSpectator('${escapeJS(id)}')">👁️ Sang xem</button>
+                            <button class="host-action-btn rounded-xl bg-rose-500/15 border border-rose-400/25 text-rose-200 text-[11px] font-black ${isSelf ? 'opacity-40 cursor-not-allowed' : ''}" ${isSelf ? 'disabled' : ''} onclick="deleteParticipant('${escapeJS(id)}')">🗑 Xóa</button>
+                        </div>
+                        ${playerIds.length > 1 ? `<div class="grid grid-cols-2 gap-2"><button class="host-action-btn rounded-xl bg-sky-500/15 border border-sky-400/25 text-sky-200 text-[11px] font-black" onclick="movePlayer('${escapeJS(id)}',-1)">↑ Lên</button><button class="host-action-btn rounded-xl bg-sky-500/15 border border-sky-400/25 text-sky-200 text-[11px] font-black" onclick="movePlayer('${escapeJS(id)}',1)">↓ Xuống</button></div>` : ''}
+                    </div>`;
+            }).join('');
+
+            $("host-spectators-list").innerHTML = spectatorIds.length ? spectatorIds.map(id => {
+                const s = spectators[id] || {};
+                return `
+                    <div class="rounded-2xl bg-purple-500/5 border border-purple-400/15 p-3 flex items-center justify-between gap-2">
+                        <div class="min-w-0"><div class="font-black text-sm text-purple-100 truncate">${escapeHTML(s.name || 'Khán giả')}</div><div class="text-[10px] text-purple-300/50">Khán giả</div></div>
+                        <div class="flex gap-2 shrink-0">
+                            <button class="host-action-btn px-3 rounded-xl bg-emerald-500/15 border border-emerald-400/25 text-emerald-200 text-[11px] font-black" onclick="promoteSpectatorToPlayer('${escapeJS(id)}')">🎮 Cho vào chơi</button>
+                            <button class="host-action-btn w-11 rounded-xl bg-rose-500/15 border border-rose-400/25 text-rose-200 text-[11px] font-black" onclick="deleteParticipant('${escapeJS(id)}')">🗑</button>
+                        </div>
+                    </div>`;
+            }).join('') : `<div class="text-[11px] text-purple-300/40 py-2">Chưa có khán giả.</div>`;
+        }
+
+        function hostOnly() {
+            return roomData.hostId === myPlayerId && !roomData.isClosed;
+        }
+
+        async function deleteParticipant(playerId) {
+            if (!hostOnly() || playerId === myPlayerId) return;
+            const p = roomData.players?.[playerId] || roomData.spectators?.[playerId];
+            if (!p) return;
+            if (!confirm(`Xóa ${p.name || 'người này'} khỏi phòng?\n\nLịch sử các ván sẽ được giữ nguyên.`)) return;
+            const updates = {};
+            if (roomData.players?.[playerId]) updates[`${ROOM_PREFIX}/${roomId}/players/${playerId}`] = null;
+            if (roomData.spectators?.[playerId]) updates[`${ROOM_PREFIX}/${roomId}/spectators/${playerId}`] = null;
+            try {
+                await window.FirebaseAPI.update(getRoomRef(), updates);
+                showToast("Đã xóa người khỏi phòng.");
+            } catch (e) { console.error(e); showAlert("Không thể xóa người này."); }
+        }
+
+        async function demotePlayerToSpectator(playerId) {
+            if (!hostOnly() || playerId === myPlayerId) return;
+            const player = roomData.players?.[playerId];
+            if (!player) return;
+            if (!confirm(`Chuyển ${player.name || 'người chơi'} sang Khán Giả?`)) return;
+            const updates = {};
+            updates[`${ROOM_PREFIX}/${roomId}/spectators/${playerId}`] = { name: player.name || 'Khán giả', joinedAt: player.joinedAt || Date.now() };
+            updates[`${ROOM_PREFIX}/${roomId}/players/${playerId}`] = null;
+            try { await window.FirebaseAPI.update(getRoomRef(), updates); showToast("Đã chuyển sang Khán Giả."); }
+            catch (e) { console.error(e); showAlert("Không thể chuyển vị trí."); }
+        }
+
+        async function promoteSpectatorToPlayer(playerId) {
+            if (!hostOnly()) return;
+            const spectator = roomData.spectators?.[playerId];
+            if (!spectator) return;
+            const count = Object.keys(roomData.players || {}).length;
+            if (count >= MAX_PLAYERS) { showAlert("Bàn đang đủ 5 người chơi."); return; }
+            const usedSeats = new Set(Object.values(roomData.players || {}).map(p => Number(p?.seatIndex)).filter(Number.isInteger));
+            const seatIndex = [0,1,2,3,4].find(i => !usedSeats.has(i));
+            const updates = {};
+            updates[`${ROOM_PREFIX}/${roomId}/players/${playerId}`] = { name: spectator.name || 'Người chơi', isWin: false, inputVal: '', joinedAt: spectator.joinedAt || Date.now(), seatIndex };
+            updates[`${ROOM_PREFIX}/${roomId}/spectators/${playerId}`] = null;
+            try { await window.FirebaseAPI.update(getRoomRef(), updates); showToast("Đã đưa khán giả vào chơi."); }
+            catch (e) { console.error(e); showAlert("Không thể đưa khán giả vào chơi."); }
+        }
+
+        async function movePlayer(playerId, direction) {
+            if (!hostOnly()) return;
+            const players = roomData.players || {};
+            const ids = Object.keys(players).sort((a,b) => (Number(players[a]?.seatIndex) - Number(players[b]?.seatIndex)) || a.localeCompare(b));
+            const index = ids.indexOf(playerId);
+            const targetIndex = index + direction;
+            if (index < 0 || targetIndex < 0 || targetIndex >= ids.length) return;
+            const a = ids[index], b = ids[targetIndex];
+            const aSeat = Number.isInteger(Number(players[a]?.seatIndex)) ? Number(players[a].seatIndex) : index;
+            const bSeat = Number.isInteger(Number(players[b]?.seatIndex)) ? Number(players[b].seatIndex) : targetIndex;
+            const updates = {};
+            updates[`${ROOM_PREFIX}/${roomId}/players/${a}/seatIndex`] = bSeat;
+            updates[`${ROOM_PREFIX}/${roomId}/players/${b}/seatIndex`] = aSeat;
+            try { await window.FirebaseAPI.update(getRoomRef(), updates); showToast("Đã đổi vị trí chơi."); }
+            catch (e) { console.error(e); showAlert("Không thể đổi vị trí."); }
+        }
+
+        /* ========================================================
            CLOSE ROOM
         ======================================================== */
 
@@ -4824,7 +4737,7 @@
                             name:
                                 myPlayer.name,
                             joinedAt:
-                                Date.now()
+                                myPlayer.joinedAt || Date.now()
                         };
 
 
@@ -4832,15 +4745,19 @@
                          * Spectator -> Player
                          */
 
-                        current.players[
-                            targetSpectatorId
-                        ] = {
-                            name:
-                                targetSpectator.name,
+                        const usedSeats = new Set(
+                            Object.values(current.players)
+                                .map(p => Number(p?.seatIndex))
+                                .filter(Number.isInteger)
+                        );
+                        const targetSeat = [0,1,2,3,4].find(i => !usedSeats.has(i)) ?? 0;
+
+                        current.players[targetSpectatorId] = {
+                            name: targetSpectator.name,
                             isWin: false,
                             inputVal: "",
-                            joinedAt:
-                                Date.now()
+                            joinedAt: targetSpectator.joinedAt || Date.now(),
+                            seatIndex: mySeatIndex
                         };
 
 
