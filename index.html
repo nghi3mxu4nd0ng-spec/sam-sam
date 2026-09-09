@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Phong Thần Bảng</title>
+    <title>Thủy Phong Bảng - Sổ Ghi Điểm Phong Thủy</title>
 
     <!-- =========================================================
          CDN
@@ -361,6 +362,52 @@
         }
 
         /* ========================================================
+           MYTHICAL AVATAR + FENG SHUI NAME SYSTEM
+        ======================================================== */
+        .avatar-orb {
+            width: 48px; height: 48px; border-radius: 18px;
+            display:flex; align-items:center; justify-content:center;
+            font-size: 1.9rem; flex:0 0 auto;
+            background: radial-gradient(circle at 35% 25%, rgba(255,255,255,.24), rgba(14,165,233,.08) 45%, rgba(2,6,23,.72));
+            border: 1px solid rgba(125,211,252,.28);
+            box-shadow: 0 0 18px rgba(56,189,248,.16), inset 0 1px 0 rgba(255,255,255,.08);
+            animation: mythicalIdle 2.7s ease-in-out infinite;
+        }
+        .avatar-orb.small { width:38px; height:38px; border-radius:14px; font-size:1.45rem; }
+        @keyframes mythicalIdle {
+            0%,100% { transform: translateY(0) rotate(-2deg) scale(1); }
+            50% { transform: translateY(-5px) rotate(2deg) scale(1.05); }
+        }
+        .avatar-choice {
+            min-height:76px; border-radius:18px; padding:8px 5px;
+            border:1px solid rgba(125,211,252,.16); background:rgba(15,23,42,.55);
+            transition:.18s ease; touch-action:manipulation;
+        }
+        .avatar-choice.selected { border-color:rgba(250,204,21,.75); background:rgba(245,158,11,.14); box-shadow:0 0 18px rgba(245,158,11,.12); transform:translateY(-2px); }
+        .feng-choice { min-height:58px; border-radius:16px; border:1px solid rgba(125,211,252,.16); background:rgba(15,23,42,.55); padding:7px 4px; font-weight:900; font-size:.7rem; transition:.18s ease; }
+        .feng-choice.selected { border-color:rgba(250,204,21,.75); background:rgba(245,158,11,.13); box-shadow:0 0 16px rgba(245,158,11,.1); }
+        .feng-name { font-weight:900; }
+        .feng-kim { color:#e5e7eb; text-shadow:0 0 10px rgba(226,232,240,.5); }
+        .feng-moc { color:#86efac; text-shadow:0 0 10px rgba(74,222,128,.35); }
+        .feng-thuy { color:#67e8f9; text-shadow:0 0 10px rgba(34,211,238,.45); }
+        .feng-hoa { color:#fda4af; text-shadow:0 0 10px rgba(251,113,133,.45); }
+        .feng-tho { color:#fcd34d; text-shadow:0 0 10px rgba(245,158,11,.42); }
+        .winner-flight-layer { position:fixed; inset:0; pointer-events:none; z-index:1500; overflow:hidden; }
+        .winner-flight-beast { position:absolute; font-size:clamp(2.8rem,8vw,5.5rem); filter:drop-shadow(0 0 14px rgba(250,204,21,.85)); animation: winnerOrbit var(--dur,3.2s) cubic-bezier(.18,.72,.2,1) forwards; }
+        @keyframes winnerOrbit {
+            0% { left:var(--sx); top:var(--sy); transform:scale(.45) rotate(-20deg); opacity:0; }
+            12% { opacity:1; transform:scale(1.1) rotate(10deg); }
+            38% { left:var(--mx); top:var(--my); transform:scale(1.35) rotate(-8deg); }
+            68% { left:var(--ex); top:var(--ey); transform:scale(1.0) rotate(18deg); }
+            100% { left:calc(var(--ex) + 4vw); top:calc(var(--ey) - 12vh); transform:scale(.3) rotate(35deg); opacity:0; }
+        }
+        .winner-burst { position:fixed; inset:0; pointer-events:none; z-index:1499; background:radial-gradient(circle at 50% 48%, rgba(250,204,21,.22), rgba(14,165,233,.10) 28%, transparent 65%); animation:winnerBurst 1.25s ease-out forwards; }
+        @keyframes winnerBurst { 0%{opacity:0; transform:scale(.65)} 20%{opacity:1; transform:scale(1)} 100%{opacity:0; transform:scale(1.2)} }
+        .winner-title { position:fixed; left:50%; top:18%; transform:translateX(-50%) scale(.5); z-index:1501; pointer-events:none; white-space:nowrap; font-size:clamp(1.3rem,5vw,3rem); font-weight:1000; color:#fde68a; text-shadow:0 0 12px #f59e0b, 0 0 30px rgba(250,204,21,.8); animation:winnerTitle 1.7s ease-out forwards; }
+        @keyframes winnerTitle { 0%{opacity:0; transform:translateX(-50%) translateY(20px) scale(.5)} 18%{opacity:1; transform:translateX(-50%) translateY(0) scale(1.08)} 100%{opacity:0; transform:translateX(-50%) translateY(-28px) scale(1)} }
+        .leader-avatar { width:40px; height:40px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.55rem; flex:0 0 auto; animation:mythicalIdle 2.7s ease-in-out infinite; }
+
+        /* ========================================================
            MOBILE SCORE KEYPAD / MANAGEMENT UI
         ======================================================== */
         .score-keypad-modal { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
@@ -491,6 +538,8 @@
     id="main-body"
     class="font-sans min-h-screen pb-16"
 >
+
+    <div id="winner-flight-layer" class="winner-flight-layer"></div>
 
     <!-- =========================================================
          WATER EFFECT
@@ -777,6 +826,22 @@
 
             </div>
 
+            <div class="text-left space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-semibold text-sky-300 uppercase tracking-wider ml-1">Linh Thú Thần Thoại</label>
+                    <span class="text-[10px] text-amber-300/70">Chọn 1</span>
+                </div>
+                <div id="avatar-picker" class="grid grid-cols-5 gap-2"></div>
+            </div>
+
+            <div class="text-left space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-semibold text-sky-300 uppercase tracking-wider ml-1">Phong Thủy Dòng Tên</label>
+                    <span class="text-[10px] text-amber-300/70">Ngũ Hành</span>
+                </div>
+                <div id="feng-picker" class="grid grid-cols-5 gap-2"></div>
+                <p id="feng-description" class="text-[10px] text-sky-300/55 px-1">Thủy — linh động, uyển chuyển, hợp chủ đề Thủy Phong.</p>
+            </div>
 
             <button
                 id="join-button"
@@ -914,6 +979,13 @@
                     🌊
                     <span class="hidden sm:inline">Dội Nước</span>
                     <span class="sm:hidden">Dội</span>
+                </button>
+
+                <button
+                    onclick="openProfileEditor()"
+                    class="flex items-center gap-1.5 bg-violet-500/20 hover:bg-violet-500/30 text-violet-200 border border-violet-400/40 px-3 py-2 rounded-xl text-xs font-bold transition active:scale-95"
+                >
+                    🐉 <span class="hidden sm:inline">Linh Thú</span><span class="sm:hidden">Hồ sơ</span>
                 </button>
 
             </div>
@@ -1181,6 +1253,14 @@
                         Ván: 0
                     </span>
 
+                    <button
+                        id="btn-swap-seat"
+                        onclick="openSwapModal()"
+                        class="hidden bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-400/40 px-2.5 py-1.5 rounded-xl text-xs font-bold transition shrink-0"
+                    >
+                        <i class="fa-solid fa-arrow-rotate-left"></i> Nhường
+                    </button>
+
                 </div>
 
 
@@ -1241,12 +1321,13 @@
 
 
             <!-- =================================================
-                 INPUT
+                 LEGACY INPUT CONTAINER (hidden)
+                 Score entry is now opened from each player row in the leaderboard.
             ================================================== -->
 
             <div
                 id="input-section"
-                class="
+                class="hidden 
                     glass-card
                     rounded-3xl
                     p-5
@@ -1301,29 +1382,6 @@
 
                     </div>
 
-
-                    <button
-                        id="btn-swap-seat"
-                        onclick="openSwapModal()"
-                        class="
-                            hidden
-                            bg-purple-500/20
-                            hover:bg-purple-500/30
-                            text-purple-300
-                            border
-                            border-purple-400/40
-                            px-2.5
-                            py-1.5
-                            rounded-xl
-                            text-xs
-                            font-bold
-                            transition
-                            shrink-0
-                        "
-                    >
-                        <i class="fa-solid fa-arrow-rotate-left"></i>
-                        Nhường
-                    </button>
 
                 </div>
 
@@ -1513,6 +1571,39 @@
 
 
     <!-- =========================================================
+         PROFILE / FENG SHUI MODAL
+    ========================================================== -->
+    <div id="profile-modal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[65] flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="glass-card border-violet-400/35 rounded-t-3xl sm:rounded-3xl p-5 w-full max-w-md space-y-5 shadow-2xl modal-enter">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-[10px] uppercase tracking-wider text-violet-300/70 font-bold">Cá nhân hóa</p>
+                    <h3 class="text-xl font-black text-white">Linh Thú & Phong Thủy</h3>
+                </div>
+                <button onclick="closeProfileEditor()" class="w-11 h-11 rounded-2xl bg-slate-800/80 border border-slate-600/60 text-slate-200 text-xl font-black">×</button>
+            </div>
+            <div>
+                <p class="text-[10px] text-sky-300 font-bold uppercase tracking-wider mb-2">Linh thú động</p>
+                <div id="profile-avatar-picker" class="grid grid-cols-5 gap-2"></div>
+            </div>
+            <div>
+                <p class="text-[10px] text-sky-300 font-bold uppercase tracking-wider mb-2">Phong thủy dòng tên</p>
+                <div id="profile-feng-picker" class="grid grid-cols-5 gap-2"></div>
+                <p id="profile-feng-description" class="text-[10px] text-sky-300/55 mt-2"></p>
+            </div>
+            <div class="rounded-2xl bg-slate-950/45 border border-cyan-400/15 p-3 text-center">
+                <div class="flex justify-center mb-2" id="profile-preview-avatar"></div>
+                <div id="profile-preview-name" class="text-lg"></div>
+                <div class="text-[10px] text-slate-400 mt-1">Xem trước tên của bạn trong bảng điểm</div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="closeProfileEditor()" class="py-4 rounded-2xl bg-slate-800/80 border border-slate-600/60 text-slate-200 font-black">Hủy</button>
+                <button onclick="saveProfileEditor()" class="py-4 rounded-2xl bg-gradient-to-r from-violet-500 to-cyan-600 text-white font-black shadow-lg">Lưu hồ sơ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
          SCORE KEYPAD MODAL
     ========================================================== -->
     <div id="score-keypad-modal"
@@ -1563,6 +1654,8 @@
                     <button class="quick-score-btn bg-emerald-500/15 border border-emerald-400/25 text-emerald-200" onclick="setQuickScore(200)">+200</button>
                 </div>
             </div>
+
+            <button id="score-keypad-winner-toggle" type="button" onclick="toggleKeypadWinner()" class="w-full py-3 rounded-2xl bg-amber-500/15 border border-amber-400/30 text-amber-200 font-black text-sm">🏆 Đánh dấu THẮNG</button>
 
             <div class="grid grid-cols-2 gap-3 pt-1">
                 <button onclick="closeScoreKeypad()" class="py-4 rounded-2xl bg-slate-800/80 border border-slate-600/60 text-slate-200 font-black">Hủy</button>
@@ -1847,7 +1940,27 @@
 
         let scoreModalPlayerId = null;
         let scoreModalValue = "";
+        let scoreModalWinner = false;
         let submittingRound = false;
+        let lastRenderedRoundCount = 0;
+        let selectedAvatarId = "thanh-long";
+        let selectedFengShui = "thuy";
+
+        const MYTHICAL_AVATARS = {
+            "thanh-long": { emoji: "🐉", name: "Thanh Long", title: "Long thần phương Đông" },
+            "chu-tuoc": { emoji: "🔥", name: "Chu Tước", title: "Thần điểu phương Nam" },
+            "ky-lan": { emoji: "🦄", name: "Kỳ Lân", title: "Linh thú cát tường" },
+            "bach-ho": { emoji: "🐯", name: "Bạch Hổ", title: "Chiến thần phương Tây" },
+            "huyen-vu": { emoji: "🐢", name: "Huyền Vũ", title: "Thần thú phương Bắc" }
+        };
+
+        const FENG_SHUI = {
+            kim: { name:"Kim", icon:"⚔️", css:"feng-kim", desc:"Kim — sắc nét, mạnh mẽ, quyết đoán." },
+            moc: { name:"Mộc", icon:"🌿", css:"feng-moc", desc:"Mộc — sinh trưởng, cân bằng, bền bỉ." },
+            thuy: { name:"Thủy", icon:"💧", css:"feng-thuy", desc:"Thủy — linh động, uyển chuyển, hợp chủ đề Thủy Phong." },
+            hoa: { name:"Hỏa", icon:"🔥", css:"feng-hoa", desc:"Hỏa — bùng nổ, nhiệt huyết, nổi bật." },
+            tho: { name:"Thổ", icon:"⛰️", css:"feng-tho", desc:"Thổ — ổn định, vững vàng, uy tín." }
+        };
 
         let roomData = {
             hostId: "",
@@ -2124,9 +2237,59 @@
         }
 
 
+        function renderProfilePickers() {
+            const avatarPicker = $("avatar-picker");
+            const fengPicker = $("feng-picker");
+            if (!avatarPicker || !fengPicker) return;
+            avatarPicker.innerHTML = Object.entries(MYTHICAL_AVATARS).map(([id,a]) => `
+                <button type="button" class="avatar-choice ${id === selectedAvatarId ? 'selected' : ''}" onclick="selectAvatar('${id}')" title="${escapeHTML(a.title)}">
+                    <div class="text-2xl leading-none">${a.emoji}</div>
+                    <div class="text-[9px] text-sky-200 mt-1 font-black truncate">${escapeHTML(a.name)}</div>
+                </button>`).join('');
+            fengPicker.innerHTML = Object.entries(FENG_SHUI).map(([id,f]) => `
+                <button type="button" class="feng-choice ${id === selectedFengShui ? 'selected' : ''} ${f.css}" onclick="selectFengShui('${id}')">
+                    <div class="text-base leading-none">${f.icon}</div><div>${f.name}</div>
+                </button>`).join('');
+            $("feng-description").innerText = FENG_SHUI[selectedFengShui]?.desc || '';
+        }
+
+        function selectAvatar(id) {
+            if (!MYTHICAL_AVATARS[id]) return;
+            selectedAvatarId = id;
+            renderProfilePickers();
+        }
+
+        function selectFengShui(id) {
+            if (!FENG_SHUI[id]) return;
+            selectedFengShui = id;
+            renderProfilePickers();
+        }
+
+        function getProfileFor(playerOrSpectator) {
+            const p = playerOrSpectator || {};
+            return {
+                avatarId: MYTHICAL_AVATARS[p.avatarId] ? p.avatarId : "thanh-long",
+                fengShui: FENG_SHUI[p.fengShui] ? p.fengShui : "thuy"
+            };
+        }
+
+        function profileHTML(p, small=false) {
+            const profile = getProfileFor(p);
+            const avatar = MYTHICAL_AVATARS[profile.avatarId];
+            const feng = FENG_SHUI[profile.fengShui];
+            return `<span class="${small ? 'leader-avatar' : 'avatar-orb'}" title="${escapeHTML(avatar.title)}">${avatar.emoji}</span>`;
+        }
+
+        function fengNameClass(p) {
+            const key = getProfileFor(p).fengShui;
+            return FENG_SHUI[key]?.css || 'feng-thuy';
+        }
+
         /* ========================================================
            ENTER KEY
         ======================================================== */
+
+        renderProfilePickers();
 
         $("username").addEventListener(
             "keydown",
@@ -2218,7 +2381,9 @@
                     await addParticipantAtomically(
                         roomId,
                         myPlayerId,
-                        myName
+                        myName,
+                        selectedAvatarId,
+                        selectedFengShui
                     );
 
 
@@ -2304,7 +2469,9 @@
         async function addParticipantAtomically(
             room,
             playerId,
-            name
+            name,
+            avatarId = "thanh-long",
+            fengShui = "thuy"
         ) {
 
             const roomRef =
@@ -2342,6 +2509,8 @@
                             players: {
                                 [playerId]: {
                                     name: name,
+                                    avatarId: MYTHICAL_AVATARS[avatarId] ? avatarId : "thanh-long",
+                                    fengShui: FENG_SHUI[fengShui] ? fengShui : "thuy",
                                     isWin: false,
                                     inputVal: "",
                                     joinedAt: Date.now(),
@@ -2407,6 +2576,8 @@
 
                         current.players[playerId].name =
                             name;
+                        current.players[playerId].avatarId = MYTHICAL_AVATARS[avatarId] ? avatarId : (current.players[playerId].avatarId || "thanh-long");
+                        current.players[playerId].fengShui = FENG_SHUI[fengShui] ? fengShui : (current.players[playerId].fengShui || "thuy");
                         if (!Number.isInteger(Number(current.players[playerId].seatIndex))) {
                             const used = new Set(Object.values(current.players).map(p => Number(p?.seatIndex)).filter(Number.isInteger));
                             const available = [0,1,2,3,4].find(i => !used.has(i));
@@ -2432,6 +2603,8 @@
 
                         current.spectators[playerId].name =
                             name;
+                        current.spectators[playerId].avatarId = MYTHICAL_AVATARS[avatarId] ? avatarId : (current.spectators[playerId].avatarId || "thanh-long");
+                        current.spectators[playerId].fengShui = FENG_SHUI[fengShui] ? fengShui : (current.spectators[playerId].fengShui || "thuy");
 
                         result = {
                             ok: true,
@@ -2506,6 +2679,8 @@
 
                         current.players[playerId] = {
                             name: name,
+                            avatarId: MYTHICAL_AVATARS[avatarId] ? avatarId : "thanh-long",
+                            fengShui: FENG_SHUI[fengShui] ? fengShui : "thuy",
                             isWin: false,
                             inputVal: "",
                             joinedAt: Date.now(),
@@ -2521,6 +2696,8 @@
 
                         current.spectators[playerId] = {
                             name: name,
+                            avatarId: MYTHICAL_AVATARS[avatarId] ? avatarId : "thanh-long",
+                            fengShui: FENG_SHUI[fengShui] ? fengShui : "thuy",
                             joinedAt: Date.now()
                         };
 
@@ -2645,6 +2822,12 @@
 
                         updateMyRole();
 
+                        const currentRoundCount = roomData.rounds.length;
+                        if (currentRoundCount > lastRenderedRoundCount && lastRenderedRoundCount > 0) {
+                            const newestRound = roomData.rounds[currentRoundCount - 1];
+                            setTimeout(() => triggerWinnerCelebration(newestRound), 60);
+                        }
+                        lastRenderedRoundCount = currentRoundCount;
 
                         renderUI();
 
@@ -2806,6 +2989,7 @@
             );
 
             roomId = "";
+            lastRenderedRoundCount = 0;
 
         }
 
@@ -2953,18 +3137,9 @@
                     .add("hidden");
 
 
-                if (isPlayer) {
-
-                    $("input-section")
-                        .classList
-                        .remove("hidden");
-
-                } else {
-
-                    $("input-section")
-                        .classList
-                        .add("hidden");
-                }
+                $("input-section")
+                    .classList
+                    .add("hidden");
 
 
                 if (isHost) {
@@ -3111,27 +3286,15 @@
                             spectators[id]?.name ||
                             "Khán giả";
 
+                        const profile = getProfileFor(spectators[id]);
+                        const avatar = MYTHICAL_AVATARS[profile.avatarId];
+                        const feng = FENG_SHUI[profile.fengShui];
                         return `
-                            <span
-                                class="
-                                    bg-purple-500/20
-                                    border
-                                    border-purple-400/30
-                                    text-purple-200
-                                    px-2.5
-                                    py-1
-                                    rounded-xl
-                                "
-                            >
-                                👁️
-                                ${escapeHTML(name)}
-                                ${
-                                    id === myPlayerId
-                                        ? "(Tôi)"
-                                        : ""
-                                }
-                            </span>
-                        `;
+                            <span class="bg-purple-500/20 border border-purple-400/30 text-purple-200 px-2.5 py-1 rounded-xl inline-flex items-center gap-1.5">
+                                <span class="text-base">${avatar.emoji}</span>
+                                <span class="feng-name ${feng.css}">${escapeHTML(name)}</span>
+                                ${id === myPlayerId ? "(Tôi)" : ""}
+                            </span>`;
 
                     })
                     .join("");
@@ -3190,216 +3353,46 @@
            RENDER LEADERBOARD
         ======================================================== */
 
-        function renderLeaderboard(
-            playerIds,
-            players
-        ) {
-
-            const scores =
-                calculateTotalScores();
-
-
-            const sorted =
-                playerIds
-                    .map(id => ({
-                        id: id,
-                        name:
-                            players[id]?.name ||
-                            "Người chơi",
-                        score:
-                            scores[id] || 0
-                    }))
-                    .sort(
-                        (a, b) =>
-                            b.score - a.score
-                    );
-
-
-            const lb =
-                $("leaderboard");
-
-
+        function renderLeaderboard(playerIds, players) {
+            const scores = calculateTotalScores();
+            const sorted = playerIds.map(id => ({
+                id,
+                name: players[id]?.name || "Người chơi",
+                score: scores[id] || 0
+            })).sort((a,b) => b.score - a.score);
+            const lb = $("leaderboard");
             if (!sorted.length) {
-
-                lb.innerHTML = `
-                    <div
-                        class="
-                            text-center
-                            py-6
-                            text-xs
-                            text-sky-300/50
-                        "
-                    >
-                        Chưa có người chơi.
-                    </div>
-                `;
-
+                lb.innerHTML = `<div class="text-center py-6 text-xs text-sky-300/50">Chưa có người chơi.</div>`;
                 return;
             }
-
-
-            lb.innerHTML =
-                sorted
-                    .map((player, index) => {
-
-                        const isPos =
-                            player.score >= 0;
-
-                        let rankIcon = "";
-
-                        if (index === 0) {
-
-                            rankIcon =
-                                `
-                                <i
-                                    class="
-                                        fa-solid
-                                        fa-crown
-                                        text-amber-400
-                                    "
-                                ></i>
-                                `;
-
-                        } else if (index === 1) {
-
-                            rankIcon =
-                                `
-                                <i
-                                    class="
-                                        fa-solid
-                                        fa-medal
-                                        text-slate-300
-                                    "
-                                ></i>
-                                `;
-
-                        } else if (index === 2) {
-
-                            rankIcon =
-                                `
-                                <i
-                                    class="
-                                        fa-solid
-                                        fa-award
-                                        text-amber-600
-                                    "
-                                ></i>
-                                `;
-
-                        } else {
-
-                            rankIcon =
-                                `
-                                <span
-                                    class="
-                                        text-xs
-                                        font-bold
-                                        text-sky-400
-                                    "
-                                >
-                                    ${index + 1}
-                                </span>
-                                `;
-                        }
-
-
-                        const isMe =
-                            player.id === myPlayerId;
-
-
-                        return `
-                            <div
-                                class="
-                                    flex
-                                    justify-between
-                                    items-center
-                                    p-3
-                                    rounded-2xl
-                                    glass-input
-                                    transition
-                                    ${
-                                        index === 0
-                                            ? "winner-row"
-                                            : ""
-                                    }
-                                "
-                            >
-
-                                <div
-                                    class="
-                                        flex
-                                        items-center
-                                        gap-3
-                                        min-w-0
-                                    "
-                                >
-
-                                    <div
-                                        class="
-                                            w-7
-                                            text-center
-                                            shrink-0
-                                        "
-                                    >
-                                        ${rankIcon}
-                                    </div>
-
-                                    <div class="min-w-0">
-
-                                        <p
-                                            class="
-                                                font-bold
-                                                text-sm
-                                                truncate
-                                                ${
-                                                    isMe
-                                                        ? "text-sky-300"
-                                                        : "text-slate-100"
-                                                }
-                                            "
-                                        >
-                                            ${escapeHTML(player.name)}
-
-                                            ${
-                                                player.id ===
-                                                roomData.hostId
-                                                    ? " 👑"
-                                                    : ""
-                                            }
-
-                                            ${
-                                                isMe
-                                                    ? " (Tôi)"
-                                                    : ""
-                                            }
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-
-                                <span
-                                    class="
-                                        font-extrabold
-                                        text-base
-                                        shrink-0
-                                        ml-2
-                                        ${
-                                            isPos
-                                                ? "text-emerald-400 glow-score-pos"
-                                                : "text-rose-400 glow-score-neg"
-                                        }
-                                    "
-                                >
-                                    ${formatScore(player.score)}
-                                </span>
-
+            lb.innerHTML = sorted.map((player, index) => {
+                const p = players[player.id] || {};
+                const isPos = player.score >= 0;
+                const isWinner = Boolean(p.isWin);
+                const inputVal = p.inputVal ?? "";
+                const isMe = player.id === myPlayerId;
+                let rankIcon = index === 0 ? `<i class="fa-solid fa-crown text-amber-400"></i>` : index === 1 ? `<i class="fa-solid fa-medal text-slate-300"></i>` : index === 2 ? `<i class="fa-solid fa-award text-amber-600"></i>` : `<span class="text-xs font-bold text-sky-400">${index+1}</span>`;
+                const actionLabel = isWinner ? "🏆 Thắng" : inputVal !== "" ? `Điểm: ${formatScore(parseScore(inputVal) ?? inputVal)}` : "Nhập điểm";
+                const fengClass = fengNameClass(p);
+                return `
+                    <div class="flex items-center justify-between gap-2 p-3 rounded-2xl glass-input transition ${isWinner ? 'winner-row' : ''}">
+                        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                            <div class="w-6 text-center shrink-0">${rankIcon}</div>
+                            ${profileHTML(p, true)}
+                            <div class="min-w-0 flex-1">
+                                <p class="feng-name ${fengClass} text-sm truncate">
+                                    ${escapeHTML(player.name)} ${player.id === roomData.hostId ? '👑' : ''} ${isMe ? '<span class="text-[10px] text-sky-300/60">(Tôi)</span>' : ''}
+                                </p>
+                                <p class="text-[9px] mt-0.5 text-slate-400 truncate">${escapeHTML(MYTHICAL_AVATARS[getProfileFor(p).avatarId].name)} · ${escapeHTML(FENG_SHUI[getProfileFor(p).fengShui].name)}</p>
+                                <p class="text-[10px] mt-0.5 ${isWinner ? 'text-amber-300' : inputVal !== '' ? 'text-cyan-300/80' : 'text-slate-400'}">${isWinner ? '🏆 Đã chọn thắng' : inputVal !== '' ? 'Đã nhập điểm ván này' : 'Chưa nhập điểm ván này'}</p>
                             </div>
-                        `;
-
-                    })
-                    .join("");
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="font-extrabold text-base ${isPos ? 'text-emerald-400 glow-score-pos' : 'text-rose-400 glow-score-neg'}">${formatScore(player.score)}</span>
+                            ${isPlayer && !roomData.isClosed ? `<button type="button" onclick="openScoreKeypad('${escapeJS(player.id)}')" class="min-h-[44px] px-3 rounded-2xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/35 text-cyan-100 font-black text-xs active:scale-95 transition whitespace-nowrap"><i class="fa-solid fa-pen-to-square mr-1"></i>${actionLabel}</button>` : ''}
+                        </div>
+                    </div>`;
+            }).join('');
         }
 
 
@@ -3510,6 +3503,42 @@
             }
         }
 
+        function openProfileEditor() {
+            if (!myPlayerId || !roomData.players?.[myPlayerId] && !roomData.spectators?.[myPlayerId]) return;
+            const p = roomData.players?.[myPlayerId] || roomData.spectators?.[myPlayerId] || {};
+            selectedAvatarId = getProfileFor(p).avatarId;
+            selectedFengShui = getProfileFor(p).fengShui;
+            const ap = $("profile-avatar-picker"), fp = $("profile-feng-picker");
+            ap.innerHTML = Object.entries(MYTHICAL_AVATARS).map(([id,a]) => `<button type="button" class="avatar-choice ${id===selectedAvatarId?'selected':''}" onclick="selectProfileAvatar('${id}')"><div class="text-2xl">${a.emoji}</div><div class="text-[9px] text-sky-200 font-black truncate">${escapeHTML(a.name)}</div></button>`).join('');
+            fp.innerHTML = Object.entries(FENG_SHUI).map(([id,f]) => `<button type="button" class="feng-choice ${id===selectedFengShui?'selected':''} ${f.css}" onclick="selectProfileFeng('${id}')"><div>${f.icon}</div><div>${f.name}</div></button>`).join('');
+            updateProfilePreview();
+            $("profile-modal").classList.remove("hidden");
+        }
+        function closeProfileEditor() { $("profile-modal").classList.add("hidden"); }
+        function selectProfileAvatar(id) { if (!MYTHICAL_AVATARS[id]) return; selectedAvatarId=id; openProfileEditor(); }
+        function selectProfileFeng(id) { if (!FENG_SHUI[id]) return; selectedFengShui=id; openProfileEditor(); }
+        function updateProfilePreview() {
+            const a = MYTHICAL_AVATARS[selectedAvatarId] || MYTHICAL_AVATARS['thanh-long'];
+            const f = FENG_SHUI[selectedFengShui] || FENG_SHUI.thuy;
+            $("profile-preview-avatar").innerHTML = `<span class="avatar-orb">${a.emoji}</span>`;
+            $("profile-preview-name").className = `feng-name ${f.css}`;
+            $("profile-preview-name").innerText = `${myName || 'Người chơi'} · ${a.name}`;
+            $("profile-feng-description").innerText = f.desc;
+        }
+        async function saveProfileEditor() {
+            if (!myPlayerId || roomData.isClosed) return;
+            const pathBase = roomData.players?.[myPlayerId] ? 'players' : roomData.spectators?.[myPlayerId] ? 'spectators' : null;
+            if (!pathBase) return;
+            try {
+                await window.FirebaseAPI.update(getRoomRef(), {
+                    [`${ROOM_PREFIX}/${roomId}/${pathBase}/${myPlayerId}/avatarId`]: selectedAvatarId,
+                    [`${ROOM_PREFIX}/${roomId}/${pathBase}/${myPlayerId}/fengShui`]: selectedFengShui
+                });
+                closeProfileEditor();
+                showToast('Đã cập nhật Linh Thú & Phong Thủy.');
+            } catch (e) { console.error('PROFILE:', e); showAlert('Không thể lưu hồ sơ. Kiểm tra Firebase Rules.'); }
+        }
+
         /* ========================================================
            SCORE KEYPAD
         ======================================================== */
@@ -3517,15 +3546,35 @@
             if (!isPlayer || roomData.isClosed || !roomData.players?.[playerId]) return;
             scoreModalPlayerId = playerId;
             scoreModalValue = String(roomData.players[playerId].inputVal ?? "");
+            scoreModalWinner = Boolean(roomData.players[playerId].isWin);
             $("score-keypad-player").innerText = roomData.players[playerId].name || "Người chơi";
             updateScoreKeypadDisplay();
+            updateKeypadWinnerButton();
             $("score-keypad-modal").classList.remove("hidden");
         }
 
         function closeScoreKeypad() {
             scoreModalPlayerId = null;
             scoreModalValue = "";
+            scoreModalWinner = false;
             $("score-keypad-modal").classList.add("hidden");
+        }
+
+        function updateKeypadWinnerButton() {
+            const btn = $("score-keypad-winner-toggle");
+            if (!btn) return;
+            btn.innerHTML = scoreModalWinner ? "🏆 ĐANG LÀ NGƯỜI THẮNG — Bấm để bỏ" : "🏆 Đánh dấu THẮNG";
+            btn.className = scoreModalWinner
+                ? "w-full py-3 rounded-2xl bg-amber-400 text-slate-950 border border-amber-300 font-black text-sm"
+                : "w-full py-3 rounded-2xl bg-amber-500/15 border border-amber-400/30 text-amber-200 font-black text-sm";
+        }
+
+        function toggleKeypadWinner() {
+            if (scoreModalPlayerId === null) return;
+            scoreModalWinner = !scoreModalWinner;
+            if (scoreModalWinner) scoreModalValue = "";
+            updateScoreKeypadDisplay();
+            updateKeypadWinnerButton();
         }
 
         function updateScoreKeypadDisplay() {
@@ -3603,8 +3652,14 @@
                 }
             }
             const playerId = scoreModalPlayerId;
+            const winner = scoreModalWinner;
             closeScoreKeypad();
-            await updateInput(playerId, "inputVal", raw);
+            if (winner) {
+                await updateInput(playerId, "isWin", true);
+            } else {
+                await updateInput(playerId, "isWin", false);
+                await updateInput(playerId, "inputVal", raw);
+            }
         }
 
         /* ========================================================
@@ -3716,6 +3771,56 @@
             }
         }
 
+
+        function triggerWinnerCelebration(round) {
+            const layer = $("winner-flight-layer");
+            if (!layer || !round) return;
+            const scores = round.scores || {};
+            const winners = Object.entries(scores).filter(([,score]) => Number(score) > 0).map(([id]) => id);
+            if (!winners.length) return;
+
+            layer.innerHTML = '';
+            const burst = document.createElement('div');
+            burst.className = 'winner-burst';
+            layer.appendChild(burst);
+            const title = document.createElement('div');
+            title.className = 'winner-title';
+            title.textContent = winners.length === 1 ? '🏆 ĐẠI THẮNG · LINH THÚ GIÁNG LÂM! 🏆' : '🏆 ĐỒNG THẮNG · THẦN THÚ XUẤT TRẬN! 🏆';
+            layer.appendChild(title);
+
+            winners.forEach((id, wi) => {
+                const p = roomData.players?.[id] || {};
+                const profileId = p.avatarId || 'thanh-long';
+                const avatar = MYTHICAL_AVATARS[profileId] || MYTHICAL_AVATARS['thanh-long'];
+                const count = 5 + wi * 2;
+                for (let i=0;i<count;i++) {
+                    const el = document.createElement('div');
+                    el.className = 'winner-flight-beast';
+                    el.textContent = avatar.emoji;
+                    const angle = (i / count) * Math.PI * 2 + wi;
+                    const sx = 35 + Math.sin(angle) * 20;
+                    const sy = 50 + Math.cos(angle) * 25;
+                    const mx = 50 + Math.sin(angle + 1.4) * 34;
+                    const my = 42 + Math.cos(angle + .8) * 28;
+                    const ex = 50 + Math.sin(angle + 2.8) * 43;
+                    const ey = 42 + Math.cos(angle + 2.3) * 34;
+                    el.style.setProperty('--sx', sx+'vw'); el.style.setProperty('--sy', sy+'vh');
+                    el.style.setProperty('--mx', mx+'vw'); el.style.setProperty('--my', my+'vh');
+                    el.style.setProperty('--ex', ex+'vw'); el.style.setProperty('--ey', ey+'vh');
+                    el.style.setProperty('--dur', (2.8 + i*.09 + wi*.25)+'s');
+                    el.style.animationDelay = (i*.035)+'s';
+                    layer.appendChild(el);
+                }
+            });
+            if (typeof confetti === 'function') {
+                confetti({ particleCount: 180, spread: 130, startVelocity: 55, origin: { y: .58 } });
+                setTimeout(() => confetti({ particleCount: 120, spread: 160, origin: { x: .15, y: .65 } }), 280);
+                setTimeout(() => confetti({ particleCount: 120, spread: 160, origin: { x: .85, y: .65 } }), 430);
+            }
+            document.body.classList.add('shake-screen');
+            setTimeout(() => document.body.classList.remove('shake-screen'), 550);
+            setTimeout(() => { layer.innerHTML = ''; }, 5200);
+        }
 
         /* ========================================================
            RENDER HISTORY
@@ -4335,7 +4440,7 @@
                     <div class="rounded-2xl bg-slate-950/35 border border-sky-400/15 p-3 space-y-2">
                         <div class="flex items-center justify-between gap-2">
                             <div class="min-w-0">
-                                <div class="font-black text-sm text-white truncate">${escapeHTML(p.name || 'Người chơi')} ${isSelf ? '👑' : ''}</div>
+                                <div class="flex items-center gap-2 min-w-0"><span class="text-xl">${MYTHICAL_AVATARS[getProfileFor(p).avatarId].emoji}</span><div class="font-black text-sm truncate ${fengNameClass(p)}">${escapeHTML(p.name || 'Người chơi')} ${isSelf ? '👑' : ''}</div></div>
                                 <div class="text-[10px] text-slate-400">Vị trí chơi: ${seat}</div>
                             </div>
                             <span class="text-[10px] font-black px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-400/20">PLAYER</span>
@@ -4352,7 +4457,7 @@
                 const s = spectators[id] || {};
                 return `
                     <div class="rounded-2xl bg-purple-500/5 border border-purple-400/15 p-3 flex items-center justify-between gap-2">
-                        <div class="min-w-0"><div class="font-black text-sm text-purple-100 truncate">${escapeHTML(s.name || 'Khán giả')}</div><div class="text-[10px] text-purple-300/50">Khán giả</div></div>
+                        <div class="min-w-0 flex items-center gap-2"><span class="text-xl">${MYTHICAL_AVATARS[getProfileFor(s).avatarId].emoji}</span><div><div class="font-black text-sm truncate ${fengNameClass(s)}">${escapeHTML(s.name || 'Khán giả')}</div><div class="text-[10px] text-purple-300/50">Khán giả</div></div></div>
                         <div class="flex gap-2 shrink-0">
                             <button class="host-action-btn px-3 rounded-xl bg-emerald-500/15 border border-emerald-400/25 text-emerald-200 text-[11px] font-black" onclick="promoteSpectatorToPlayer('${escapeJS(id)}')">🎮 Cho vào chơi</button>
                             <button class="host-action-btn w-11 rounded-xl bg-rose-500/15 border border-rose-400/25 text-rose-200 text-[11px] font-black" onclick="deleteParticipant('${escapeJS(id)}')">🗑</button>
@@ -4385,7 +4490,7 @@
             if (!player) return;
             if (!confirm(`Chuyển ${player.name || 'người chơi'} sang Khán Giả?`)) return;
             const updates = {};
-            updates[`${ROOM_PREFIX}/${roomId}/spectators/${playerId}`] = { name: player.name || 'Khán giả', joinedAt: player.joinedAt || Date.now() };
+            updates[`${ROOM_PREFIX}/${roomId}/spectators/${playerId}`] = { name: player.name || 'Khán giả', avatarId: player.avatarId || 'thanh-long', fengShui: player.fengShui || 'thuy', joinedAt: player.joinedAt || Date.now() };
             updates[`${ROOM_PREFIX}/${roomId}/players/${playerId}`] = null;
             try { await window.FirebaseAPI.update(getRoomRef(), updates); showToast("Đã chuyển sang Khán Giả."); }
             catch (e) { console.error(e); showAlert("Không thể chuyển vị trí."); }
@@ -4400,7 +4505,7 @@
             const usedSeats = new Set(Object.values(roomData.players || {}).map(p => Number(p?.seatIndex)).filter(Number.isInteger));
             const seatIndex = [0,1,2,3,4].find(i => !usedSeats.has(i));
             const updates = {};
-            updates[`${ROOM_PREFIX}/${roomId}/players/${playerId}`] = { name: spectator.name || 'Người chơi', isWin: false, inputVal: '', joinedAt: spectator.joinedAt || Date.now(), seatIndex };
+            updates[`${ROOM_PREFIX}/${roomId}/players/${playerId}`] = { name: spectator.name || 'Người chơi', avatarId: spectator.avatarId || 'thanh-long', fengShui: spectator.fengShui || 'thuy', isWin: false, inputVal: '', joinedAt: spectator.joinedAt || Date.now(), seatIndex };
             updates[`${ROOM_PREFIX}/${roomId}/spectators/${playerId}`] = null;
             try { await window.FirebaseAPI.update(getRoomRef(), updates); showToast("Đã đưa khán giả vào chơi."); }
             catch (e) { console.error(e); showAlert("Không thể đưa khán giả vào chơi."); }
@@ -4734,10 +4839,10 @@
                         current.spectators[
                             myPlayerId
                         ] = {
-                            name:
-                                myPlayer.name,
-                            joinedAt:
-                                myPlayer.joinedAt || Date.now()
+                            name: myPlayer.name,
+                            avatarId: myPlayer.avatarId || "thanh-long",
+                            fengShui: myPlayer.fengShui || "thuy",
+                            joinedAt: myPlayer.joinedAt || Date.now()
                         };
 
 
@@ -4754,6 +4859,8 @@
 
                         current.players[targetSpectatorId] = {
                             name: targetSpectator.name,
+                            avatarId: targetSpectator.avatarId || "thanh-long",
+                            fengShui: targetSpectator.fengShui || "thuy",
                             isWin: false,
                             inputVal: "",
                             joinedAt: targetSpectator.joinedAt || Date.now(),
@@ -5390,7 +5497,10 @@
 
         window.addEventListener(
             "load",
-            () => {
+            async () => {
+
+                /* Dọn phòng rác/phòng tạo lỗi trước khi khởi tạo. */
+                await cleanupInvalidRooms();
 
                 const params =
                     new URLSearchParams(
@@ -5419,4 +5529,4 @@
 
 </body>
 </html>
-```
+
