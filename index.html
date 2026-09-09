@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -1565,9 +1566,7 @@
                                 mt-0.5
                             "
                         >
-                            Chọn
-                            <b>Thắng</b>
-                            hoặc nhập điểm thua.
+                            Ván mới #${getCurrentRoundNumber()} · Chọn <b>Thắng</b> hoặc nhập điểm của chính bạn.
                         </p>
 
                     </div>
@@ -3592,46 +3591,33 @@
         ======================================================== */
 
         function calculateTotalScores() {
-
             const totals = {};
 
+            Object.keys(roomData.players || {}).forEach(playerId => {
+                totals[playerId] = 0;
+            });
 
-            Object.keys(
-                roomData.players || {}
-            ).forEach(
-                playerId => {
-                    totals[playerId] = 0;
-                }
-            );
-
-
-            for (
-                const round of roomData.rounds || []
-            ) {
-
-                for (
-                    const [playerId, score]
-                    of Object.entries(
-                        round?.scores || {}
-                    )
-                ) {
-
-                    const value =
-                        Number(score) || 0;
-
-
-                    totals[playerId] =
-                        Math.round(
-                            (
-                                (totals[playerId] || 0) +
-                                value
-                            ) * 100
-                        ) / 100;
+            // Tổng điểm hiện có = cộng dồn tất cả các ván đã chốt.
+            // Không đổi dấu của điểm đã nhập.
+            for (const round of roomData.rounds || []) {
+                for (const [playerId, score] of Object.entries(round?.scores || {})) {
+                    const value = Number(score) || 0;
+                    totals[playerId] = Math.round(
+                        ((totals[playerId] || 0) + value) * 100
+                    ) / 100;
                 }
             }
 
-
             return totals;
+        }
+
+        function getCurrentRoundNumber() {
+            return (roomData.rounds || []).length + 1;
+        }
+
+        function getCurrentWinnerId() {
+            const players = roomData.players || {};
+            return Object.keys(players).find(id => Boolean(players[id]?.isWin)) || "";
         }
 
 
@@ -3684,8 +3670,11 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-2 shrink-0">
-                            <span class="font-extrabold text-base ${isPos ? 'text-emerald-400 glow-score-pos' : 'text-rose-400 glow-score-neg'}">${formatScore(player.score)}</span>
-                            ${isPlayer && !roomData.isClosed ? `<button type="button" onclick="openScoreKeypad('${escapeJS(player.id)}')" class="min-h-[44px] px-3 rounded-2xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/35 text-cyan-100 font-black text-xs active:scale-95 transition whitespace-nowrap"><i class="fa-solid fa-pen-to-square mr-1"></i>${actionLabel}</button>` : ''}
+                            <div class="text-right shrink-0">
+                                <div class="text-[8px] uppercase tracking-wider text-sky-300/55 font-black">Tổng điểm hiện có</div>
+                                <div class="font-extrabold text-base ${isPos ? 'text-emerald-400 glow-score-pos' : 'text-rose-400 glow-score-neg'}">${formatScore(player.score)}</div>
+                                ${isPlayer && !roomData.isClosed && player.id === myPlayerId && !isWinner ? `<button type="button" onclick="openScoreKeypad('${escapeJS(player.id)}')" class="min-h-[40px] mt-1 px-3 rounded-2xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/35 text-cyan-100 font-black text-xs active:scale-95 transition whitespace-nowrap"><i class="fa-solid fa-pen-to-square mr-1"></i>${actionLabel}</button>` : ''}
+                            </div>
                         </div>
                     </div>`;
             }).join('');
@@ -3701,6 +3690,8 @@
             players
         ) {
             const container = $("players-input-list");
+            const currentWinnerId = getCurrentWinnerId();
+            const totals = calculateTotalScores();
 
             const orderedIds = [...playerIds].sort((a,b) => {
                 const sa = Number.isInteger(Number(players[a]?.seatIndex)) ? Number(players[a].seatIndex) : 999;
@@ -3715,6 +3706,10 @@
                 const value = player.inputVal ?? "";
                 const parsed = parseScore(value);
                 const displayValue = value === "" ? "Chưa nhập" : formatScore(parsed ?? value);
+                const totalScore = Number(totals[id] || 0);
+                const canChooseWinner = isMe && !currentWinnerId;
+                const canUnchooseWinner = isMe && isWin;
+                const canEditOwnScore = isMe && !isWin;
 
                 return `
                     <div class="player-score-card p-4 rounded-3xl ${isWin ? 'bg-amber-500/10 border-amber-400/50 winner-row' : isMe ? 'bg-sky-500/10 border-sky-400/40' : 'bg-slate-900/45 border-sky-400/15'} border space-y-3">
@@ -3723,30 +3718,51 @@
                                 <span class="w-8 h-8 shrink-0 rounded-xl ${isWin ? 'bg-amber-400/20 text-amber-300' : 'bg-sky-400/10 text-sky-300'} flex items-center justify-center text-xs font-black">${Number(player.seatIndex ?? 0) + 1}</span>
                                 <div class="min-w-0">
                                     <div class="font-black text-sm ${isMe ? 'text-sky-300' : 'text-white'} truncate">${escapeHTML(player.name || 'Người chơi')} ${isMe ? '<span class="text-[10px] text-sky-300/60">(Tôi)</span>' : ''}</div>
-                                    <div class="text-[10px] text-slate-400">${isWin ? '🏆 Người thắng' : 'Điểm thua / điểm nhập'}</div>
+                                    <div class="text-[10px] text-slate-400">${isWin ? '🏆 Người thắng — không nhập điểm' : 'Điểm của chính bạn trong Ván này'}</div>
                                 </div>
                             </div>
-                            <button type="button" onclick="updateInput('${escapeJS(id)}','isWin',${!isWin})" class="shrink-0 min-h-[44px] px-4 rounded-2xl ${isWin ? 'bg-amber-400 text-slate-950' : 'bg-emerald-500/15 text-emerald-200 border border-emerald-400/30'} font-black text-xs active:scale-95 transition">
-                                ${isWin ? '🏆 THẮNG' : '✓ Chọn Thắng'}
-                            </button>
+
+                            <div class="text-right shrink-0">
+                                <div class="text-[8px] uppercase tracking-wider text-sky-300/55 font-black">Tổng điểm hiện có</div>
+                                <div class="font-black ${totalScore >= 0 ? 'text-emerald-300' : 'text-rose-300'}">${formatScore(totalScore)}</div>
+                            </div>
                         </div>
 
-                        ${!isWin ? `
-                            <button type="button" onclick="openScoreKeypad('${escapeJS(id)}')" class="w-full min-h-[74px] rounded-3xl bg-slate-950/45 border border-cyan-400/25 flex items-center justify-between gap-3 px-5 active:scale-[.99] transition">
+                        ${isWin ? `
+                            <div class="rounded-2xl bg-amber-400/10 border border-amber-400/20 px-4 py-3 text-center text-xs font-black text-amber-200">
+                                🏆 Người thắng không có ô nhập điểm. Điểm thắng sẽ tự động = − tổng điểm của những người còn lại.
+                            </div>
+                            ${canUnchooseWinner ? `
+                                <button type="button" onclick="updateInput('${escapeJS(id)}','isWin',false)" class="w-full min-h-[46px] rounded-2xl bg-amber-400 text-slate-950 font-black text-xs active:scale-95 transition">
+                                    Bỏ chọn THẮNG
+                                </button>
+                            ` : ''}
+                        ` : `
+                            <button type="button"
+                                onclick="${canEditOwnScore ? `openScoreKeypad('${escapeJS(id)}')` : ''}"
+                                ${canEditOwnScore ? '' : 'disabled'}
+                                class="w-full min-h-[74px] rounded-3xl bg-slate-950/45 border border-cyan-400/25 flex items-center justify-between gap-3 px-5 ${canEditOwnScore ? 'active:scale-[.99] transition' : 'opacity-60 cursor-not-allowed'}">
                                 <span class="text-left">
-                                    <span class="block text-[10px] uppercase tracking-wider text-cyan-300/60 font-bold">Nhấn để nhập điểm</span>
+                                    <span class="block text-[10px] uppercase tracking-wider text-cyan-300/60 font-bold">${canEditOwnScore ? 'Nhấn để nhập điểm của bạn' : 'Chỉ được nhập điểm của chính mình'}</span>
                                     <span class="block mt-1 text-sm font-black text-white">${value === '' ? 'Mở bàn phím điểm' : 'Đã nhập'}</span>
                                 </span>
                                 <span class="score-value-large ${parsed !== null && parsed < 0 ? 'text-rose-300 glow-score-neg' : parsed !== null && parsed > 0 ? 'text-emerald-300 glow-score-pos' : 'text-slate-300'}">${escapeHTML(String(displayValue))}</span>
                             </button>
-                        ` : `
-                            <div class="rounded-2xl bg-amber-400/10 border border-amber-400/20 px-4 py-3 text-center text-xs font-black text-amber-200">Người này không cần nhập điểm thua.</div>
+
+                            ${canChooseWinner ? `
+                                <button type="button" onclick="updateInput('${escapeJS(id)}','isWin',true)" class="w-full min-h-[46px] px-4 rounded-2xl bg-emerald-500/15 text-emerald-200 border border-emerald-400/30 font-black text-xs active:scale-95 transition">
+                                    🏆 Chọn mình là NGƯỜI THẮNG
+                                </button>
+                            ` : currentWinnerId && !isMe ? `
+                                <div class="rounded-2xl bg-slate-950/35 border border-slate-700/50 px-4 py-3 text-center text-[10px] font-black text-slate-400">
+                                    🔒 ${escapeHTML(players[currentWinnerId]?.name || 'Một người chơi')} đã chọn THẮNG. Không thể chọn thêm người thắng.
+                                </div>
+                            ` : ''}
                         `}
                     </div>
                 `;
             }).join("");
         }
-
 
         /* ========================================================
            ESCAPE JS STRING
@@ -3775,6 +3791,29 @@
             if (!isPlayer || roomData.isClosed) return;
             if (!roomData.players?.[playerId]) return;
 
+            const target = roomData.players[playerId];
+
+            // Chỉ chính người chơi mới được nhập/sửa dữ liệu của mình.
+            if (playerId !== myPlayerId) {
+                showToast("Bạn chỉ được nhập hoặc thay đổi điểm của chính mình.");
+                return;
+            }
+
+            // Người thắng tuyệt đối không có điểm nhập trực tiếp.
+            if (target.isWin && field === "inputVal") {
+                showToast("Người thắng không có ô nhập điểm.");
+                return;
+            }
+
+            // Mỗi ván chỉ có 01 người thắng.
+            if (field === "isWin" && value === true) {
+                const currentWinnerId = getCurrentWinnerId();
+                if (currentWinnerId && currentWinnerId !== playerId) {
+                    showToast(`Ván này đã có người thắng: ${roomData.players[currentWinnerId]?.name || "Người chơi"}.`);
+                    return;
+                }
+            }
+
             if (field === "inputVal") {
                 const raw = String(value ?? "").trim();
                 if (raw !== "" && parseScore(raw) === null) {
@@ -3789,6 +3828,9 @@
 
             if (field === "isWin" && value === true) {
                 updates[`${ROOM_PREFIX}/${roomId}/players/${playerId}/inputVal`] = "";
+                updates[`${ROOM_PREFIX}/${roomId}/players/${playerId}/inputBy`] = "";
+                updates[`${ROOM_PREFIX}/${roomId}/players/${playerId}/inputByName`] = "";
+                updates[`${ROOM_PREFIX}/${roomId}/players/${playerId}/inputAt`] = 0;
             }
 
             try {
@@ -3847,17 +3889,24 @@
         function openScoreKeypad(playerId) {
             if (!isPlayer || roomData.isClosed || !roomData.players?.[playerId]) return;
 
-            // Người chơi phải hoàn tất phần điểm của chính mình trước khi
-            // được hỗ trợ nhập điểm cho người chơi khác.
-            if (playerId !== myPlayerId && !isPlayerScoreComplete(myPlayerId)) {
-                showToast("Hãy nhập điểm cho chính bạn trước, rồi mới hỗ trợ người khác.");
+            const player = roomData.players[playerId];
+
+            if (playerId !== myPlayerId) {
+                showToast(player.isWin
+                    ? "Không được nhập hoặc thay đổi điểm cho người thắng."
+                    : "Chỉ người chơi đó mới được nhập điểm của chính mình.");
+                return;
+            }
+
+            if (player.isWin) {
+                showToast("Bạn đã chọn THẮNG — điểm sẽ được hệ thống tính tự động.");
                 return;
             }
 
             scoreModalPlayerId = playerId;
-            scoreModalValue = String(roomData.players[playerId].inputVal ?? "");
-            scoreModalWinner = Boolean(roomData.players[playerId].isWin);
-            $("score-keypad-player").innerText = roomData.players[playerId].name || "Người chơi";
+            scoreModalValue = String(player.inputVal ?? "");
+            scoreModalWinner = false;
+            $("score-keypad-player").innerText = player.name || "Người chơi";
             updateScoreKeypadDisplay();
             updateKeypadWinnerButton();
             $("score-keypad-modal").classList.remove("hidden");
@@ -3873,16 +3922,49 @@
         function updateKeypadWinnerButton() {
             const btn = $("score-keypad-winner-toggle");
             if (!btn) return;
-            btn.innerHTML = scoreModalWinner ? "🏆 ĐANG LÀ NGƯỜI THẮNG — Bấm để bỏ" : "🏆 Đánh dấu THẮNG";
-            btn.className = scoreModalWinner
-                ? "w-full py-3 rounded-2xl bg-amber-400 text-slate-950 border border-amber-300 font-black text-sm"
-                : "w-full py-3 rounded-2xl bg-amber-500/15 border border-amber-400/30 text-amber-200 font-black text-sm";
+
+            const currentWinnerId = getCurrentWinnerId();
+
+            if (currentWinnerId === myPlayerId) {
+                btn.disabled = false;
+                btn.innerHTML = "🏆 BẠN ĐANG LÀ NGƯỜI THẮNG — Bấm để bỏ";
+                btn.className = "w-full py-3 rounded-2xl bg-amber-400 text-slate-950 border border-amber-300 font-black text-sm";
+                return;
+            }
+
+            if (currentWinnerId) {
+                btn.disabled = true;
+                btn.innerHTML = `🔒 ${escapeHTML(roomData.players[currentWinnerId]?.name || "Người chơi")} đã chọn THẮNG`;
+                btn.className = "w-full py-3 rounded-2xl bg-slate-800/80 border border-slate-600/60 text-slate-400 font-black text-sm cursor-not-allowed";
+                return;
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = "🏆 Chọn mình là NGƯỜI THẮNG";
+            btn.className = "w-full py-3 rounded-2xl bg-amber-500/15 border border-amber-400/30 text-amber-200 font-black text-sm";
         }
 
         function toggleKeypadWinner() {
-            if (scoreModalPlayerId === null) return;
-            scoreModalWinner = !scoreModalWinner;
-            if (scoreModalWinner) scoreModalValue = "";
+            if (scoreModalPlayerId === null || scoreModalPlayerId !== myPlayerId) return;
+
+            const currentWinnerId = getCurrentWinnerId();
+
+            if (currentWinnerId === myPlayerId || scoreModalWinner) {
+                scoreModalWinner = false;
+                scoreModalValue = "";
+                updateScoreKeypadDisplay();
+                updateKeypadWinnerButton();
+                return;
+            }
+
+            if (currentWinnerId) {
+                showToast(`Ván này đã có người thắng: ${roomData.players[currentWinnerId]?.name || "Người chơi"}.`);
+                updateKeypadWinnerButton();
+                return;
+            }
+
+            scoreModalWinner = true;
+            scoreModalValue = "";
             updateScoreKeypadDisplay();
             updateKeypadWinnerButton();
         }
@@ -3897,7 +3979,7 @@
         }
 
         function appendScoreDigit(digit) {
-            if (scoreModalPlayerId === null) return;
+            if (scoreModalPlayerId === null || scoreModalPlayerId !== myPlayerId || scoreModalWinner) return;
             let value = scoreModalValue;
             if (value === "0") value = "";
             if (value === "-0") value = "-";
@@ -3916,33 +3998,39 @@
         }
 
         function appendScoreDecimal() {
+            if (scoreModalPlayerId === null || scoreModalPlayerId !== myPlayerId || scoreModalWinner) return;
             if (scoreModalValue.includes(".")) return;
             scoreModalValue = scoreModalValue === "" ? "0." : scoreModalValue + ".";
             updateScoreKeypadDisplay();
         }
 
         function toggleScoreSign() {
+            if (scoreModalPlayerId === null || scoreModalPlayerId !== myPlayerId || scoreModalWinner) return;
             if (!scoreModalValue || scoreModalValue === "0") return;
             scoreModalValue = scoreModalValue.startsWith("-") ? scoreModalValue.slice(1) : `-${scoreModalValue}`;
             updateScoreKeypadDisplay();
         }
 
         function clearScoreInput() {
+            if (scoreModalPlayerId === null || scoreModalPlayerId !== myPlayerId || scoreModalWinner) return;
             scoreModalValue = "";
             updateScoreKeypadDisplay();
         }
 
         function backspaceScoreInput() {
+            if (scoreModalPlayerId === null || scoreModalPlayerId !== myPlayerId || scoreModalWinner) return;
             scoreModalValue = scoreModalValue.slice(0, -1);
             updateScoreKeypadDisplay();
         }
 
         function setScoreValue(value) {
+            if (scoreModalPlayerId === null || scoreModalPlayerId !== myPlayerId || scoreModalWinner) return;
             scoreModalValue = String(value);
             updateScoreKeypadDisplay();
         }
 
         function setQuickScore(value) {
+            if (scoreModalPlayerId === null || scoreModalPlayerId !== myPlayerId || scoreModalWinner) return;
             scoreModalValue = String(value);
             updateScoreKeypadDisplay();
         }
@@ -3950,53 +4038,56 @@
         async function confirmScoreInput() {
             if (scoreModalPlayerId === null) return;
 
-            const targetPlayerId = scoreModalPlayerId;
-            if (targetPlayerId !== myPlayerId && !isPlayerScoreComplete(myPlayerId)) {
-                showToast("Hãy hoàn tất điểm của chính bạn trước.");
+            const playerId = scoreModalPlayerId;
+
+            if (playerId !== myPlayerId) {
                 closeScoreKeypad();
+                showToast("Không được nhập điểm thay người chơi khác.");
+                return;
+            }
+
+            if (roomData.players?.[playerId]?.isWin) {
+                closeScoreKeypad();
+                showToast("Người thắng không có điểm nhập trực tiếp.");
+                return;
+            }
+
+            const currentWinnerId = getCurrentWinnerId();
+
+            if (scoreModalWinner) {
+                if (currentWinnerId && currentWinnerId !== playerId) {
+                    closeScoreKeypad();
+                    showToast(`Ván này đã có người thắng: ${roomData.players[currentWinnerId]?.name || "Người chơi"}.`);
+                    return;
+                }
+
+                closeScoreKeypad();
+                await updateInput(playerId, "isWin", true);
+                closeRequiredScorePopup();
                 return;
             }
 
             const raw = String(scoreModalValue ?? "").trim();
-            if (raw !== "" && parseScore(raw) === null) {
+            if (raw === "" || parseScore(raw) === null) {
+                showToast("Vui lòng nhập điểm hợp lệ.");
+                return;
+            }
+
+            const parsed = parseScore(raw);
+            if (parsed === null || Math.abs(parsed) > 999999) {
                 showToast("Điểm không hợp lệ.");
                 return;
             }
-            if (raw !== "") {
-                const parsed = parseScore(raw);
-                if (parsed === null || Math.abs(parsed) > 999999) {
-                    showToast("Điểm không hợp lệ.");
-                    return;
-                }
-            }
-            const playerId = scoreModalPlayerId;
-            const winner = scoreModalWinner;
-            closeScoreKeypad();
-            if (playerId === myPlayerId) closeRequiredScorePopup();
 
-            if (winner) {
-                // Luật mới: mỗi vòng CHỈ có đúng 01 người thắng.
-                // Khi bất kỳ ai chọn người thắng, toàn bộ cờ thắng khác bị hủy.
-                const winnerUpdates = {};
-                Object.keys(roomData.players || {}).forEach(id => {
-                    winnerUpdates[`${ROOM_PREFIX}/${roomId}/players/${id}/isWin`] = id === playerId;
-                    if (id === playerId) {
-                        winnerUpdates[`${ROOM_PREFIX}/${roomId}/players/${id}/inputVal`] = "";
-                    }
-                });
-                try {
-                    await window.FirebaseAPI.update(getRoomRef(), winnerUpdates);
-                } catch (error) {
-                    console.error("SET WINNER:", error);
-                    showAlert("Không thể xác lập người thắng. Kiểm tra Firebase Rules.");
-                }
-            } else {
-                await updateInput(playerId, "isWin", false);
-                await updateInput(playerId, "inputVal", raw);
-                await updateInput(playerId, "inputBy", myPlayerId);
-                await updateInput(playerId, "inputByName", myName || "Người chơi");
-                await updateInput(playerId, "inputAt", Date.now());
-            }
+            closeScoreKeypad();
+            closeRequiredScorePopup();
+
+            // Giữ nguyên dấu + / - mà người chơi đã nhập.
+            await updateInput(playerId, "inputVal", raw);
+            await updateInput(playerId, "isWin", false);
+            await updateInput(playerId, "inputBy", myPlayerId);
+            await updateInput(playerId, "inputByName", myName || "Người chơi");
+            await updateInput(playerId, "inputAt", Date.now());
         }
 
         /* ========================================================
@@ -4017,7 +4108,7 @@
             const missingPlayers = [];
             const winners = [];
             const currentRoundScores = {};
-            let totalLossPool = 0;
+            let sumOtherPlayers = 0;
 
             try {
                 for (const playerId of playerIds) {
@@ -4031,15 +4122,15 @@
 
                     const raw = String(player.inputVal ?? "").trim();
                     const parsed = parseScore(raw);
+
                     if (parsed === null) {
                         missingPlayers.push(name);
                         continue;
                     }
 
-                    // Cho phép nhập dương/âm/0. Khi chốt, người thua luôn nhận điểm âm.
-                    const loserScore = parsed === 0 ? 0 : -Math.abs(parsed);
-                    currentRoundScores[playerId] = loserScore;
-                    totalLossPool += Math.abs(loserScore);
+                    // Giữ nguyên dấu + / - của người chơi.
+                    currentRoundScores[playerId] = parsed;
+                    sumOtherPlayers += parsed;
                 }
 
                 if (missingPlayers.length) {
@@ -4052,45 +4143,55 @@
                     showAlert(
                         winners.length === 0
                             ? "Phải có đúng 1 người chọn THẮNG!"
-                            : "Mỗi vòng chỉ được có 1 người thắng. Hãy bỏ trạng thái THẮNG của người dư."
+                            : "Mỗi ván chỉ được có 1 người thắng."
                     );
                     return;
                 }
 
-                if (totalLossPool <= 0) {
-                    showAlert("Ván này cần ít nhất một người có điểm khác 0.");
-                    return;
-                }
+                // Người thắng không nhập điểm trực tiếp.
+                // Điểm thắng = - Tổng điểm của tất cả người còn lại trong ván.
+                const winnerId = winners[0];
+                const winnerScore = Math.round((-sumOtherPlayers) * 100) / 100;
+                currentRoundScores[winnerId] = winnerScore;
 
-                // Chỉ có 01 người thắng nên nhận toàn bộ tổng điểm thua.
-                const winShare = Math.round(totalLossPool * 100) / 100;
-                currentRoundScores[winners[0]] = winShare;
+                // Tổng điểm của cả ván bắt buộc bằng 0.
+                const finalTotal = Math.round(
+                    Object.values(currentRoundScores)
+                        .reduce((sum, score) => sum + Number(score || 0), 0) * 100
+                ) / 100;
 
-                let total = Math.round(Object.values(currentRoundScores).reduce((sum, score) => sum + Number(score), 0) * 100) / 100;
-                if (total !== 0) {
-                    const lastWinner = winners[winners.length - 1];
-                    currentRoundScores[lastWinner] = Math.round((currentRoundScores[lastWinner] - total) * 100) / 100;
-                }
-
-                const finalTotal = Math.round(Object.values(currentRoundScores).reduce((sum, score) => sum + Number(score), 0) * 100) / 100;
                 if (finalTotal !== 0) {
-                    showAlert(`Không thể cân bằng điểm Ván mới. Tổng hiện tại: ${finalTotal}`);
+                    showAlert(`Không thể cân bằng điểm Ván ${getCurrentRoundNumber()}. Tổng hiện tại: ${finalTotal}`);
                     return;
                 }
 
                 const rounds = [
                     ...(roomData.rounds || []),
                     {
+                        roundNo: getCurrentRoundNumber(),
                         scores: currentRoundScores,
-                        playerNames: Object.fromEntries(playerIds.map(id => [id, players[id]?.name || "Người chơi"])),
+                        playerNames: Object.fromEntries(
+                            playerIds.map(id => [id, players[id]?.name || "Người chơi"])
+                        ),
+                        winnerId,
+                        winnerScore,
                         createdAt: Date.now(),
                         createdBy: myPlayerId
                     }
                 ];
 
+                // Chốt ván xong => xóa dữ liệu nhập tạm.
+                // Lần nhập điểm tiếp theo tự động là VÁN MỚI.
                 const resetPlayers = {};
                 playerIds.forEach(playerId => {
-                    resetPlayers[playerId] = { ...(players[playerId] || {}), isWin: false, inputVal: "", inputBy: "", inputByName: "", inputAt: 0 };
+                    resetPlayers[playerId] = {
+                        ...(players[playerId] || {}),
+                        isWin: false,
+                        inputVal: "",
+                        inputBy: "",
+                        inputByName: "",
+                        inputAt: 0
+                    };
                 });
 
                 await window.FirebaseAPI.update(getRoomRef(), {
@@ -4099,7 +4200,8 @@
                     warningMsg: ""
                 });
 
-                showToast(`Đã chốt Ván ${rounds.length}`);
+                showToast(`Đã chốt Ván ${rounds.length}. Tổng điểm đã được cộng dồn realtime.`);
+
                 setTimeout(() => {
                     if (typeof confetti === "function") {
                         confetti({ particleCount: 35, spread: 60, origin: { y: 0.75 } });
@@ -4107,65 +4209,10 @@
                 }, 50);
             } catch (error) {
                 console.error("SUBMIT ROUND:", error);
-                showAlert("Không thể chốt ván. Có thể Firebase Rules đã từ chối thao tác.");
+                showAlert("Không thể chốt ván. Kiểm tra Firebase Rules.");
             } finally {
                 submittingRound = false;
             }
-        }
-
-
-        function triggerWinnerCelebration(round) {
-            const layer = $("winner-flight-layer");
-            if (!layer || !round) return;
-            const scores = round.scores || {};
-            const winners = Object.entries(scores).filter(([,score]) => Number(score) > 0).map(([id]) => id);
-            if (!winners.length) return;
-
-            layer.innerHTML = '';
-            const burst = document.createElement('div');
-            burst.className = 'winner-burst';
-            layer.appendChild(burst);
-            const title = document.createElement('div');
-            title.className = 'winner-title';
-            title.textContent = winners.length === 1 ? '🏆 ĐẠI THẮNG · LINH THÚ GIÁNG LÂM! 🏆' : '🏆 ĐỒNG THẮNG · THẦN THÚ XUẤT TRẬN! 🏆';
-            layer.appendChild(title);
-            const ring = document.createElement('div'); ring.className='winner-super-ring'; layer.appendChild(ring);
-            const winner = roomData.players?.[winners[0]] || {};
-            const winnerAvatar = MYTHICAL_AVATARS[winner.avatarId || 'thanh-long'] || MYTHICAL_AVATARS['thanh-long'];
-            for(let b=0;b<28;b++){ const fx=document.createElement('div'); fx.className='winner-flight-beast'; fx.innerHTML=`<span class="winner-flight-glyph">${winnerAvatar.emoji}</span><span class="winner-flight-spark">✦</span>`; fx.style.setProperty('--sx',(Math.random()*100)+'vw'); fx.style.setProperty('--sy',(55+Math.random()*35)+'vh'); fx.style.setProperty('--mx',(25+Math.random()*50)+'vw'); fx.style.setProperty('--my',(20+Math.random()*55)+'vh'); fx.style.setProperty('--ex',(Math.random()*100)+'vw'); fx.style.setProperty('--ey',(5+Math.random()*40)+'vh'); fx.style.setProperty('--dur',(2.5+Math.random()*2)+'s'); fx.style.animationDelay=(Math.random()*.65)+'s'; layer.appendChild(fx); }
-
-            winners.forEach((id, wi) => {
-                const p = roomData.players?.[id] || {};
-                const profileId = p.avatarId || 'thanh-long';
-                const avatar = MYTHICAL_AVATARS[profileId] || MYTHICAL_AVATARS['thanh-long'];
-                const count = 8 + wi * 3;
-                for (let i=0;i<count;i++) {
-                    const el = document.createElement('div');
-                    el.className = 'winner-flight-beast';
-                    el.innerHTML = `<span class="winner-flight-glyph">${avatar.emoji}</span><span class="winner-flight-spark">✦</span>`;
-                    const angle = (i / count) * Math.PI * 2 + wi;
-                    const sx = 35 + Math.sin(angle) * 20;
-                    const sy = 50 + Math.cos(angle) * 25;
-                    const mx = 50 + Math.sin(angle + 1.4) * 34;
-                    const my = 42 + Math.cos(angle + .8) * 28;
-                    const ex = 50 + Math.sin(angle + 2.8) * 43;
-                    const ey = 42 + Math.cos(angle + 2.3) * 34;
-                    el.style.setProperty('--sx', sx+'vw'); el.style.setProperty('--sy', sy+'vh');
-                    el.style.setProperty('--mx', mx+'vw'); el.style.setProperty('--my', my+'vh');
-                    el.style.setProperty('--ex', ex+'vw'); el.style.setProperty('--ey', ey+'vh');
-                    el.style.setProperty('--dur', (2.8 + i*.09 + wi*.25)+'s');
-                    el.style.animationDelay = (i*.035)+'s';
-                    layer.appendChild(el);
-                }
-            });
-            if (typeof confetti === 'function') {
-                confetti({ particleCount: 180, spread: 130, startVelocity: 55, origin: { y: .58 } });
-                setTimeout(() => confetti({ particleCount: 120, spread: 160, origin: { x: .15, y: .65 } }), 280);
-                setTimeout(() => confetti({ particleCount: 120, spread: 160, origin: { x: .85, y: .65 } }), 430);
-            }
-            document.body.classList.add('shake-screen');
-            setTimeout(() => document.body.classList.remove('shake-screen'), 550);
-            setTimeout(() => { layer.innerHTML = ''; }, 5200);
         }
 
         /* ========================================================
@@ -5732,4 +5779,4 @@
 
 </body>
 </html>
-
+```
